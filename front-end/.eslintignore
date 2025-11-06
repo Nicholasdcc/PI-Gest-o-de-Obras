@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Environment files
+.env*
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Minified files
+*.min.js
+*.min.css
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
