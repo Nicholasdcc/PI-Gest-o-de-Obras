@@ -57,7 +57,7 @@ export function useAuth(): AuthState & AuthActions {
     try {
       const response = await apiLogin(credentials)
       
-      // Save token and user to localStorage
+      // Save token and user to localStorage and cookies
       saveToken(response.access_token)
       saveUser(response.user)
       
@@ -69,8 +69,16 @@ export function useAuth(): AuthState & AuthActions {
         error: null,
       })
       
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Check if there's a redirect URL in the query params
+      const urlParams = new URLSearchParams(window.location.search)
+      const redirect = urlParams.get('redirect')
+      
+      // Redirect to the original page or dashboard
+      if (redirect && redirect !== '/login') {
+        router.push(redirect)
+      } else {
+        router.push('/dashboard')
+      }
     } catch (error) {
       const errorMessage = getErrorMessage(error)
       setState((prev: AuthState) => ({

@@ -6,11 +6,11 @@
 
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { clearAuth } from '@/utils/auth'
+import { clearAuth, isAuthenticated } from '@/utils/auth'
 
 export default function DashboardLayout({
   children,
@@ -20,6 +20,21 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const router = useRouter()
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
+  // Check authentication on mount and route changes
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!isAuthenticated()) {
+        // Not authenticated, redirect to login with current path
+        router.replace(`/login?redirect=${encodeURIComponent(pathname)}`)
+      } else {
+        setIsCheckingAuth(false)
+      }
+    }
+
+    checkAuth()
+  }, [pathname, router])
 
   const menuItems = [
     { name: 'Principal', icon: '🏠', link: '/dashboard' },
@@ -37,6 +52,18 @@ export default function DashboardLayout({
       return pathname === '/dashboard'
     }
     return pathname.startsWith(link)
+  }
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#001489] mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticação...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

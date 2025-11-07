@@ -1,37 +1,80 @@
 /**
  * Authentication Utility Module
  * 
- * Manages authentication tokens in localStorage
+ * Manages authentication tokens in localStorage and cookies
  */
 
 const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
 
 /**
- * Save authentication token to localStorage
+ * Set a cookie
  */
-export function saveToken(token: string): void {
+function setCookie(name: string, value: string, days: number = 7): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(TOKEN_KEY, token)
+    const expires = new Date()
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`
   }
 }
 
 /**
- * Get authentication token from localStorage
+ * Get a cookie
  */
-export function getToken(): string | null {
+function getCookie(name: string): string | null {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem(TOKEN_KEY)
+    const nameEQ = name + '='
+    const ca = document.cookie.split(';')
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i]
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length)
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length)
+    }
   }
   return null
 }
 
 /**
- * Remove authentication token from localStorage
+ * Delete a cookie
+ */
+function deleteCookie(name: string): void {
+  if (typeof window !== 'undefined') {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`
+  }
+}
+
+/**
+ * Save authentication token to localStorage and cookies
+ */
+export function saveToken(token: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(TOKEN_KEY, token)
+    setCookie(TOKEN_KEY, token, 7) // Cookie expires in 7 days
+  }
+}
+
+/**
+ * Get authentication token from localStorage or cookies
+ */
+export function getToken(): string | null {
+  if (typeof window !== 'undefined') {
+    // Try localStorage first
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (token) return token
+    
+    // Fallback to cookies
+    return getCookie(TOKEN_KEY)
+  }
+  return null
+}
+
+/**
+ * Remove authentication token from localStorage and cookies
  */
 export function removeToken(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(TOKEN_KEY)
+    deleteCookie(TOKEN_KEY)
   }
 }
 
