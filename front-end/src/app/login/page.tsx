@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
@@ -74,11 +75,14 @@ export default function LoginPage() {
         <div className="absolute bottom-8 right-6 z-10">
           <div className="bg-gradient-to-r from-[#00829B]/90 to-[#1C146B]/90 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-2xl">
             <div className="flex items-center gap-4 mb-3">
-              <img
+              <Image
                 src="https://upload.wikimedia.org/wikipedia/commons/b/ba/CPTM.svg"
                 alt="CPTM Logo"
+                width={48}
+                height={48}
                 onMouseEnter={() => setIsLogoExpanded(true)}
-                className="h-12 w-12 object-contain bg-white rounded-lg p-1 cursor-pointer hover:scale-110 transition-transform"
+                className="object-contain bg-white rounded-lg p-1 cursor-pointer hover:scale-110 transition-transform"
+                priority
               />
               <div>
                 <h2 className="text-3xl font-bold text-white">CPTM</h2>
@@ -101,10 +105,12 @@ export default function LoginPage() {
             <div className="absolute -top-3 -right-3 bg-gradient-to-br from-[#00829B] to-[#1C146B] text-white text-xs px-3 py-1 rounded-full shadow-lg">
               Hover to view
             </div>
-            <img
+            <Image
               src="https://upload.wikimedia.org/wikipedia/commons/b/ba/CPTM.svg"
               alt="CPTM Logo Expanded"
-              className="w-[500px] h-[500px] object-contain transition-transform duration-500"
+              width={500}
+              height={500}
+              className="object-contain transition-transform duration-500"
             />
             <div className="mt-6 text-center">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">CPTM Official Logo</h3>
@@ -130,10 +136,13 @@ export default function LoginPage() {
       <div className="w-full md:w-[480px] bg-[#001489] shadow-2xl flex flex-col">
         <div className="pt-12 pb-8 px-12 border-b border-white/10">
           <div className="flex items-center justify-center mb-4">
-            <img
+            <Image
               src="https://upload.wikimedia.org/wikipedia/commons/d/d7/Metrô-SP_logo.svg"
               alt="Metrô-SP Logo"
-              className="h-24 w-auto object-contain"
+              width={96}
+              height={96}
+              className="object-contain"
+              priority
             />
           </div>
           <p className="text-center text-white text-xs mt-2 uppercase tracking-widest">Acesse o Portal</p>

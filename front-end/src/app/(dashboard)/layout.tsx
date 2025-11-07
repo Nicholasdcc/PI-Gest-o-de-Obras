@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { clearAuth } from '@/utils/auth'
 
@@ -50,11 +51,13 @@ export default function DashboardLayout({
         {/* Logo */}
         <div className="p-6 flex items-center justify-center border-b border-white/20">
           <div className="text-white text-center">
-            <img
+            <Image
               src="https://upload.wikimedia.org/wikipedia/commons/d/d7/Metrô-SP_logo.svg"
               alt="Metrô-SP Logo"
-              className="h-12 w-auto object-contain transition-all duration-500"
-              style={{ height: isSidebarExpanded ? '48px' : '40px' }}
+              width={isSidebarExpanded ? 48 : 40}
+              height={isSidebarExpanded ? 48 : 40}
+              className="object-contain transition-all duration-500 mx-auto"
+              priority
             />
             {isSidebarExpanded && (
               <div className="text-xs font-light opacity-90 whitespace-nowrap mt-2">
