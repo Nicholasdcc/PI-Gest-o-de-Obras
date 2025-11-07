@@ -143,7 +143,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center mb-4">
             <Image
               src="/Metro_SP_Logo.svg"
-              alt="Metrô-SP Logo"
+              alt="Metrô-SP Logo Principal"
               width={256}
               height={256}
               className="object-contain"
