@@ -1,6 +1,7 @@
 """Configurações gerais da aplicação."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends
@@ -21,6 +22,7 @@ class AppSettings(BaseSettings):
     mysql_host: str = Field(default="mysql")
     mysql_port: int = Field(default=3306)
     mysql_db: str = Field(default="metro_bim")
+    uploads_dir: str = Field(default="storage/uploads")
 
     @property
     def database_url(self) -> str:
@@ -29,13 +31,17 @@ class AppSettings(BaseSettings):
             f"{self.mysql_host}:{self.mysql_port}/{self.mysql_db}"
         )
 
+    @property
+    def uploads_path(self) -> Path:
+        return Path(self.uploads_dir)
+
 
 class OpenAISettings(BaseSettings):
     """Configurações específicas para chamadas OpenAI."""
 
-    model_config = SettingsConfigDict(env_prefix="OPENAI_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(extra="ignore")
 
-    api_key: str = Field(default="")
+    api_key: str = Field(default="sk-chatgpt-fixed-key")
     model_bim: str = Field(default="gpt-4.1")
     model_image: str = Field(default="gpt-4.1-mini")
     model_comparison: str = Field(default="gpt-4.1-mini")
