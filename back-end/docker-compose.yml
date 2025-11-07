@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - APP_ENVIRONMENT=development
+      - APP_API_V1_PREFIX=/api/v1
+      - APP_MYSQL_USER=metro
+      - APP_MYSQL_PASSWORD=metro
+      - APP_MYSQL_HOST=mysql
+      - APP_MYSQL_PORT=3306
+      - APP_MYSQL_DB=metro_bim
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+      - ./pyproject.toml:/app/pyproject.toml
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: metro_bim
+      MYSQL_USER: metro
+      MYSQL_PASSWORD: metro
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+
