@@ -47,25 +47,29 @@ class OpenAIService:
             client = AsyncOpenAI(api_key=api_key, timeout=self._settings.openai.timeout)
         self._client = client
 
-    async def analyze_bim(self, *, bim_url: str, project_context: str | None = None) -> BimAnalysis:
+    async def analyze_bim(
+        self, *, bim_source: str, project_context: str | None = None
+    ) -> BimAnalysis:
         """Executa prompt para análise de arquivo BIM."""
 
         payload = await self._ask_openai(
             model=self._settings.openai.model_bim,
-            user_prompt=self._bim_prompt(bim_url=bim_url, context=project_context),
+            user_prompt=self._bim_prompt(source=bim_source, context=project_context),
         )
         parsed = BimAnalysisPayload.model_validate_json(payload)
-        return self._to_bim_entity(parsed, source_uri=bim_url)
+        return self._to_bim_entity(parsed, source_uri=bim_source)
 
-    async def analyze_image(self, *, image_url: str, project_context: str | None = None) -> ImageAnalysis:
+    async def analyze_image(
+        self, *, image_source: str, project_context: str | None = None
+    ) -> ImageAnalysis:
         """Executa prompt para análise de imagem."""
 
         payload = await self._ask_openai(
             model=self._settings.openai.model_image,
-            user_prompt=self._image_prompt(image_url=image_url, context=project_context),
+            user_prompt=self._image_prompt(source=image_source, context=project_context),
         )
         parsed = ImageAnalysisPayload.model_validate_json(payload)
-        return self._to_image_entity(parsed, source_uri=image_url)
+        return self._to_image_entity(parsed, source_uri=image_source)
 
     async def compare_results(
         self,
@@ -152,22 +156,22 @@ class OpenAIService:
         )
 
     @staticmethod
-    def _bim_prompt(*, bim_url: str, context: str | None) -> str:
+    def _bim_prompt(*, source: str, context: str | None) -> str:
         return (
-            "Analise o arquivo BIM disponível no link a seguir: {bim_url}. "
+            "Analise o arquivo BIM disponível em: {source}. "
             "{context_msg}\nRetorne resumo e incongruências."
         ).format(
-            bim_url=bim_url,
+            source=source,
             context_msg=f"Contexto do projeto: {context}." if context else "",
         )
 
     @staticmethod
-    def _image_prompt(*, image_url: str, context: str | None) -> str:
+    def _image_prompt(*, source: str, context: str | None) -> str:
         return (
-            "Analise a imagem da obra disponível no link: {image_url}. "
+            "Analise a imagem da obra localizada em: {source}. "
             "{context_msg}\nDescreva condições observadas e discrepâncias visíveis."
         ).format(
-            image_url=image_url,
+            source=source,
             context_msg=f"Contexto do projeto: {context}." if context else "",
         )
 
