@@ -137,7 +137,7 @@ export default function LoginPage() {
         <div className="pt-12 pb-8 px-12 border-b border-white/10">
           <div className="flex items-center justify-center mb-4">
             <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/d/d7/Metrô-SP_logo.svg"
+              src="/Metro_SP_Logo.svg"
               alt="Metrô-SP Logo"
               width={96}
               height={96}

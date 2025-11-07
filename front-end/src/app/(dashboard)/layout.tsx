@@ -8,9 +8,9 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { clearAuth, isAuthenticated } from '@/utils/auth'
+import { motion } from 'motion/react'
 
 export default function DashboardLayout({
   children,
@@ -19,8 +19,13 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
+  // Logo size states
+  const logoSizeSmall = 10
+  const logoSizeLarge = 48
+  // const smallScale = logoSizeSmall / logoSizeLarge
 
   // Check authentication on mount and route changes
   useEffect(() => {
@@ -78,25 +83,45 @@ export default function DashboardLayout({
         {/* Logo */}
         <div className="p-6 flex items-center justify-center border-b border-white/20">
           <div className="text-white text-center">
-            <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/d/d7/Metrô-SP_logo.svg"
+            <motion.img
+              src="/Metro_SP_Logo.svg"
               alt="Metrô-SP Logo"
-              width={isSidebarExpanded ? 48 : 40}
-              height={isSidebarExpanded ? 48 : 40}
-              className="object-contain transition-all duration-500 mx-auto"
-              priority
+              className="mx-auto block"
+              animate={{ 
+                height: isSidebarExpanded ? logoSizeLarge : logoSizeSmall 
+              }}
+              transition={{
+                duration: 0.45,
+                ease: [0.4, 0.0, 0.2, 1]
+              }}
+              style={{ 
+                width: 'auto',
+                objectFit: 'contain',
+              }}
             />
-            {isSidebarExpanded && (
-              <div className="text-xs font-light opacity-90 whitespace-nowrap mt-2">
-                Portal de Inspeção
-              </div>
-            )}
+            <motion.div
+              initial={false}
+              animate={{ 
+                opacity: isSidebarExpanded ? 1 : 0,
+                height: isSidebarExpanded ? 'auto' : 0,
+                marginTop: isSidebarExpanded ? 8 : 0
+              }}
+              transition={{ 
+                duration: 0.35,
+                delay: isSidebarExpanded ? 0.2 : 0,
+                ease: [0.4, 0.0, 0.2, 1]
+              }}
+              className="text-xs font-light whitespace-nowrap overflow-hidden"
+              style={{ opacity: 0.9 }}
+            >
+              Portal de Inspeção
+            </motion.div>
           </div>
         </div>
 
         {/* Menu Items */}
         <nav className="flex-1 py-6">
-          {menuItems.map((item) => {
+          {menuItems.map((item, index) => {
             const active = isActive(item.link)
             return (
               <Link
@@ -107,11 +132,22 @@ export default function DashboardLayout({
                 }`}
               >
                 <span className="text-2xl">{item.icon}</span>
-                {isSidebarExpanded && (
-                  <span className="ml-4 font-medium whitespace-nowrap">
-                    {item.name}
-                  </span>
-                )}
+                <motion.span
+                  initial={false}
+                  animate={{
+                    opacity: isSidebarExpanded ? 1 : 0,
+                    width: isSidebarExpanded ? 'auto' : 0,
+                    marginLeft: isSidebarExpanded ? 16 : 0
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    delay: isSidebarExpanded ? 0.1 + (index * 0.05) : 0,
+                    ease: [0.4, 0.0, 0.2, 1]
+                  }}
+                  className="font-medium whitespace-nowrap overflow-hidden"
+                >
+                  {item.name}
+                </motion.span>
               </Link>
             )
           })}
@@ -124,9 +160,22 @@ export default function DashboardLayout({
             className="w-full flex items-center px-6 py-4 text-white transition-all duration-300 hover:bg-white/10"
           >
             <span className="text-2xl">🚪</span>
-            {isSidebarExpanded && (
-              <span className="ml-4 font-medium whitespace-nowrap">Sair</span>
-            )}
+            <motion.span
+              initial={false}
+              animate={{
+                opacity: isSidebarExpanded ? 1 : 0,
+                width: isSidebarExpanded ? 'auto' : 0,
+                marginLeft: isSidebarExpanded ? 16 : 0
+              }}
+              transition={{
+                duration: 0.3,
+                delay: isSidebarExpanded ? 0.25 : 0,
+                ease: [0.4, 0.0, 0.2, 1]
+              }}
+              className="font-medium whitespace-nowrap overflow-hidden"
+            >
+              Sair
+            </motion.span>
           </button>
         </div>
       </div>
