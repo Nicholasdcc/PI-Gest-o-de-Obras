@@ -6,11 +6,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 COPY pyproject.toml ./
+COPY app ./app
 
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -e .[dev]
-
-COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
 

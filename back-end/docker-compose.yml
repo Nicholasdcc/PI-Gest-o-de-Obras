@@ -12,7 +12,7 @@ services:
       - APP_MYSQL_HOST=mysql
       - APP_MYSQL_PORT=3306
       - APP_MYSQL_DB=metro_bim
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_KEY=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
     volumes:
       - ./app:/app/app
       - ./alembic:/app/alembic
