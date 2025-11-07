@@ -48,21 +48,21 @@ class FakeOpenAIService:
     def __init__(self, fail: bool = False) -> None:
         self.fail = fail
 
-    async def analyze_bim(self, *, bim_url: str, project_context: str | None = None) -> BimAnalysis:
+    async def analyze_bim(self, *, bim_source: str, project_context: str | None = None) -> BimAnalysis:
         if self.fail:
             raise RuntimeError("boom")
         return BimAnalysis(
-            bim_source_uri=bim_url,
+            bim_source_uri=bim_source,
             status=AnalysisStatus.COMPLETED,
             summary="Resumo BIM",
             issues=(DetectedIssue("Crack", IssueSeverity.MEDIUM, 0.8),),
         )
 
     async def analyze_image(
-        self, *, image_url: str, project_context: str | None = None
+        self, *, image_source: str, project_context: str | None = None
     ) -> ImageAnalysis:
         return ImageAnalysis(
-            image_source_uri=image_url,
+            image_source_uri=image_source,
             status=AnalysisStatus.COMPLETED,
             summary="Resumo imagem",
             issues=(DetectedIssue("Crack", IssueSeverity.MEDIUM, 0.7),),
@@ -92,8 +92,8 @@ async def test_analyze_project_use_case_success() -> None:
     result = await use_case.execute(
         AnalyzeProjectInput(
             project_name="Reforma Estação",
-            bim_url="https://example.com/file.bim",
-            image_url="https://example.com/photo.jpg",
+            bim_file_path="/tmp/file.bim",
+            image_file_paths=("/tmp/photo.jpg",),
         )
     )
 
@@ -115,8 +115,8 @@ async def test_analyze_project_use_case_failure() -> None:
         await use_case.execute(
             AnalyzeProjectInput(
                 project_name="Reforma Estação",
-                bim_url="https://example.com/file.bim",
-                image_url="https://example.com/photo.jpg",
+                bim_file_path="/tmp/file.bim",
+                image_file_paths=("/tmp/photo.jpg",),
             )
         )
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence
 
 from app.domain.entities import (
     AnalysisStatus,
@@ -19,8 +19,8 @@ from app.use_cases.exceptions import AnalysisExecutionError
 @dataclass(slots=True)
 class AnalyzeProjectInput:
     project_name: str
-    bim_url: str
-    image_url: str
+    bim_file_path: str
+    image_file_paths: Sequence[str]
     requested_by: Optional[str] = None
     context: Optional[str] = None
 
@@ -38,11 +38,14 @@ class AnalyzeProjectUseCase:
         self._ai_service = ai_service
 
     async def execute(self, payload: AnalyzeProjectInput) -> ProjectAnalysis:
+        if not payload.image_file_paths:
+            raise AnalysisExecutionError("Nenhuma imagem fornecida para análise")
+
         analysis = ProjectAnalysis(
             project_name=payload.project_name,
             requested_by=payload.requested_by,
-            bim_source_uri=payload.bim_url,
-            image_source_uri=payload.image_url,
+            bim_source_uri=payload.bim_file_path,
+            image_source_uri=payload.image_file_paths[0],
             status=AnalysisStatus.RUNNING,
         )
 
@@ -68,7 +71,7 @@ class AnalyzeProjectUseCase:
         self, analysis: ProjectAnalysis, payload: AnalyzeProjectInput
     ) -> BimAnalysis:
         return await self._ai_service.analyze_bim(
-            bim_url=payload.bim_url,
+            bim_source=payload.bim_file_path,
             project_context=payload.context,
         )
 
@@ -76,7 +79,7 @@ class AnalyzeProjectUseCase:
         self, analysis: ProjectAnalysis, payload: AnalyzeProjectInput
     ) -> ImageAnalysis:
         return await self._ai_service.analyze_image(
-            image_url=payload.image_url,
+            image_source=payload.image_file_paths[0],
             project_context=payload.context,
         )
 
