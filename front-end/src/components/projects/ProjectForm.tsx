@@ -86,7 +86,7 @@ export function ProjectForm({
           id="name"
           value={formData.name}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition placeholder:text-gray-500 ${
             errors.name
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:ring-[#001489]'
@@ -112,7 +112,7 @@ export function ProjectForm({
           id="location"
           value={formData.location}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('location', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none ${
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none placeholder:text-gray-500 ${
             errors.location
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:ring-[#001489]'
@@ -139,13 +139,21 @@ export function ProjectForm({
           id="status"
           value={formData.status}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange('status', e.target.value as ProjectStatus)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001489] transition"
+          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001489] transition font-semibold ${
+            formData.status === 'active' 
+              ? 'bg-emerald-50 text-emerald-800' 
+              : formData.status === 'paused'
+              ? 'bg-amber-50 text-amber-800'
+              : formData.status === 'completed'
+              ? 'bg-blue-50 text-blue-800'
+              : 'bg-slate-50 text-slate-700'
+          }`}
           disabled={isLoading}
         >
-          <option value="active">Ativo</option>
-          <option value="paused">Pausado</option>
-          <option value="completed">Concluído</option>
-          <option value="archived">Arquivado</option>
+          <option value="active" className="bg-emerald-50 text-emerald-800 font-semibold">✅ Ativo</option>
+          <option value="paused" className="bg-amber-50 text-amber-800 font-semibold">⏸️ Pausado</option>
+          <option value="completed" className="bg-blue-50 text-blue-800 font-semibold">🏁 Concluído</option>
+          <option value="archived" className="bg-slate-50 text-slate-700 font-semibold">📦 Arquivado</option>
         </select>
       </div>
 

@@ -197,7 +197,7 @@ export function EvidenceUpload({ onUpload, isLoading = false }: EvidenceUploadPr
           id="description"
           value={description}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001489] transition resize-none"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#001489] transition resize-none placeholder:text-gray-500"
           placeholder="Ex: Rachadura na parede do corredor principal"
           disabled={isLoading}
           rows={3}

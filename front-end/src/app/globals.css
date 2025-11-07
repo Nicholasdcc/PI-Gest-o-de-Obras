@@ -24,3 +24,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 
+  Placeholder Styles - Controle global da cor dos placeholders
+  Modifique a opacidade abaixo para ajustar a visibilidade dos placeholders em todo o projeto
+*/
+::placeholder {
+  opacity: 0.7; /* Aumentado de ~0.5 padrão para 0.7 (mais visível) */
+}
+
+::-webkit-input-placeholder {
+  opacity: 0.7;
+}
+
+::-moz-placeholder {
+  opacity: 0.7;
+}
+
+:-ms-input-placeholder {
+  opacity: 0.7;
+}

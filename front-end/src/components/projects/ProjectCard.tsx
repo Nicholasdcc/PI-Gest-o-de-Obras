@@ -17,10 +17,10 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-100 text-green-800 border-green-200',
-    paused: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    completed: 'bg-blue-100 text-blue-800 border-blue-200',
-    archived: 'bg-gray-100 text-gray-800 border-gray-200',
+    active: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    paused: 'bg-amber-100 text-amber-800 border-amber-300',
+    completed: 'bg-blue-100 text-blue-800 border-blue-300',
+    archived: 'bg-slate-100 text-slate-700 border-slate-300',
   }
 
   const statusColor = statusColors[project.status] || statusColors.active

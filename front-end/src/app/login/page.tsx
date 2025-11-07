@@ -182,7 +182,7 @@ export default function LoginPage() {
                 }}
                 className={`w-full px-4 py-3 border-2 ${
                   validationErrors.email ? 'border-red-500' : 'border-white'
-                } bg-white text-[#001489] rounded-xl focus:outline-none focus:ring-2 focus:ring-white transition placeholder-gray-500 font-normal`}
+                } bg-white text-[#001489] rounded-xl focus:outline-none focus:ring-2 focus:ring-white transition placeholder:text-gray-500 font-normal`}
                 placeholder="Digite seu email"
                 disabled={isLoading}
                 required
@@ -208,7 +208,7 @@ export default function LoginPage() {
                 }}
                 className={`w-full px-4 py-3 border-2 ${
                   validationErrors.password ? 'border-red-500' : 'border-white'
-                } bg-white text-[#001489] rounded-xl focus:outline-none focus:ring-2 focus:ring-white transition placeholder-gray-500 font-normal`}
+                } bg-white text-[#001489] rounded-xl focus:outline-none focus:ring-2 focus:ring-white transition placeholder:text-gray-500 font-normal`}
                 placeholder="Digite sua senha"
                 disabled={isLoading}
                 required
