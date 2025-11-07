@@ -13,6 +13,14 @@ from app.domain.entities import AnalysisStatus
 from app.infrastructure.db.base import Base
 
 
+analysis_status_enum = Enum(
+    AnalysisStatus,
+    values_callable=lambda enum: [item.value for item in enum],
+    name="analysis_status",
+    native_enum=False,
+)
+
+
 class ProjectAnalysisModel(Base):
     __tablename__ = "project_analyses"
 
@@ -21,7 +29,7 @@ class ProjectAnalysisModel(Base):
     requested_by: Mapped[Optional[str]] = mapped_column(String(255))
     bim_source_uri: Mapped[str] = mapped_column(Text, nullable=False)
     image_source_uri: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[AnalysisStatus] = mapped_column(Enum(AnalysisStatus), nullable=False)
+    status: Mapped[AnalysisStatus] = mapped_column(analysis_status_enum, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -34,16 +42,19 @@ class ProjectAnalysisModel(Base):
         back_populates="project",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="selectin",
     )
     image_analysis: Mapped[Optional["ImageAnalysisModel"]] = relationship(
         back_populates="project",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="selectin",
     )
     comparison_result: Mapped[Optional["ComparisonResultModel"]] = relationship(
         back_populates="project",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="selectin",
     )
 
 
@@ -58,13 +69,13 @@ class BimAnalysisModel(Base):
     raw_output: Mapped[Optional[str]] = mapped_column(Text)
     compliance_notes: Mapped[Optional[str]] = mapped_column(Text)
     issues: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    status: Mapped[AnalysisStatus] = mapped_column(Enum(AnalysisStatus), nullable=False)
+    status: Mapped[AnalysisStatus] = mapped_column(analysis_status_enum, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
-    project: Mapped[ProjectAnalysisModel] = relationship(back_populates="bim_analysis")
+    project: Mapped[ProjectAnalysisModel] = relationship(back_populates="bim_analysis", lazy="selectin")
 
 
 class ImageAnalysisModel(Base):
@@ -78,13 +89,13 @@ class ImageAnalysisModel(Base):
     raw_output: Mapped[Optional[str]] = mapped_column(Text)
     observed_conditions: Mapped[Optional[str]] = mapped_column(Text)
     issues: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    status: Mapped[AnalysisStatus] = mapped_column(Enum(AnalysisStatus), nullable=False)
+    status: Mapped[AnalysisStatus] = mapped_column(analysis_status_enum, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
-    project: Mapped[ProjectAnalysisModel] = relationship(back_populates="image_analysis")
+    project: Mapped[ProjectAnalysisModel] = relationship(back_populates="image_analysis", lazy="selectin")
 
 
 class ComparisonResultModel(Base):
@@ -102,5 +113,5 @@ class ComparisonResultModel(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    project: Mapped[ProjectAnalysisModel] = relationship(back_populates="comparison_result")
+    project: Mapped[ProjectAnalysisModel] = relationship(back_populates="comparison_result", lazy="selectin")
 

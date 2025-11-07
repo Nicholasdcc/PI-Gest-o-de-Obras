@@ -6,6 +6,7 @@ from typing import Sequence
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities import ProjectAnalysis
@@ -28,6 +29,7 @@ class SQLAlchemyProjectAnalysisRepository(ProjectAnalysisRepository):
         update_project_model_from_entity(analysis, model)
         self._session.add(model)
         await self._session.flush()
+        await self._session.commit()
         await self._session.refresh(model)
         return project_model_to_domain(model)
 
@@ -37,11 +39,20 @@ class SQLAlchemyProjectAnalysisRepository(ProjectAnalysisRepository):
             raise ValueError("Análise não encontrada para atualização")
         update_project_model_from_entity(analysis, model)
         await self._session.flush()
+        await self._session.commit()
         await self._session.refresh(model)
         return project_model_to_domain(model)
 
     async def get_by_id(self, analysis_id: UUID) -> ProjectAnalysis | None:
-        stmt = select(models.ProjectAnalysisModel).where(models.ProjectAnalysisModel.id == analysis_id)
+        stmt = (
+            select(models.ProjectAnalysisModel)
+            .options(
+                selectinload(models.ProjectAnalysisModel.bim_analysis),
+                selectinload(models.ProjectAnalysisModel.image_analysis),
+                selectinload(models.ProjectAnalysisModel.comparison_result),
+            )
+            .where(models.ProjectAnalysisModel.id == analysis_id)
+        )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         if model is None:
@@ -51,6 +62,11 @@ class SQLAlchemyProjectAnalysisRepository(ProjectAnalysisRepository):
     async def list_recent(self, limit: int = 20) -> Sequence[ProjectAnalysis]:
         stmt = (
             select(models.ProjectAnalysisModel)
+            .options(
+                selectinload(models.ProjectAnalysisModel.bim_analysis),
+                selectinload(models.ProjectAnalysisModel.image_analysis),
+                selectinload(models.ProjectAnalysisModel.comparison_result),
+            )
             .order_by(models.ProjectAnalysisModel.created_at.desc())
             .limit(limit)
         )

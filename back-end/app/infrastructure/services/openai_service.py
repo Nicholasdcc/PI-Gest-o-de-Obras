@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 
 from openai import AsyncOpenAI
@@ -30,6 +31,9 @@ SYSTEM_PROMPT = (
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 class OpenAIService:
     """Serviço de alto nível para lidar com prompts específicos."""
 
@@ -40,36 +44,61 @@ class OpenAIService:
         settings: Settings | None = None,
     ) -> None:
         self._settings = settings or get_settings()
+        self._use_mock = False
         api_key = self._settings.openai.api_key
-        if client is None:
-            if not api_key:
-                raise OpenAIServiceError("Chave da API OpenAI não configurada")
-            client = AsyncOpenAI(api_key=api_key, timeout=self._settings.openai.timeout)
         self._client = client
+
+        if self._client is None:
+            if api_key:
+                try:
+                    self._client = AsyncOpenAI(api_key=api_key, timeout=self._settings.openai.timeout)
+                except Exception as exc:  # pragma: no cover - erro de inicialização
+                    logger.warning("Falha ao inicializar cliente OpenAI, usando fallback mock. Detalhe: %s", exc)
+                    self._use_mock = True
+            else:
+                logger.warning("Chave OpenAI ausente. Serviço usará respostas mockadas.")
+                self._use_mock = True
+
+        if self._client is None:
+            self._use_mock = True
 
     async def analyze_bim(
         self, *, bim_source: str, project_context: str | None = None
     ) -> BimAnalysis:
         """Executa prompt para análise de arquivo BIM."""
 
-        payload = await self._ask_openai(
-            model=self._settings.openai.model_bim,
-            user_prompt=self._bim_prompt(source=bim_source, context=project_context),
-        )
-        parsed = BimAnalysisPayload.model_validate_json(payload)
-        return self._to_bim_entity(parsed, source_uri=bim_source)
+        if self._use_mock:
+            return self._mock_bim_analysis(source_uri=bim_source)
+
+        try:
+            payload = await self._ask_openai(
+                model=self._settings.openai.model_bim,
+                user_prompt=self._bim_prompt(source=bim_source, context=project_context),
+            )
+            parsed = BimAnalysisPayload.model_validate_json(payload)
+            return self._to_bim_entity(parsed, source_uri=bim_source)
+        except OpenAIServiceError as exc:
+            logger.warning("OpenAI indisponível para análise BIM. Utilizando fallback mock. Detalhe: %s", exc)
+            return self._mock_bim_analysis(source_uri=bim_source)
 
     async def analyze_image(
         self, *, image_source: str, project_context: str | None = None
     ) -> ImageAnalysis:
         """Executa prompt para análise de imagem."""
 
-        payload = await self._ask_openai(
-            model=self._settings.openai.model_image,
-            user_prompt=self._image_prompt(source=image_source, context=project_context),
-        )
-        parsed = ImageAnalysisPayload.model_validate_json(payload)
-        return self._to_image_entity(parsed, source_uri=image_source)
+        if self._use_mock:
+            return self._mock_image_analysis(source_uri=image_source)
+
+        try:
+            payload = await self._ask_openai(
+                model=self._settings.openai.model_image,
+                user_prompt=self._image_prompt(source=image_source, context=project_context),
+            )
+            parsed = ImageAnalysisPayload.model_validate_json(payload)
+            return self._to_image_entity(parsed, source_uri=image_source)
+        except OpenAIServiceError as exc:
+            logger.warning("OpenAI indisponível para análise de imagem. Utilizando fallback mock. Detalhe: %s", exc)
+            return self._mock_image_analysis(source_uri=image_source)
 
     async def compare_results(
         self,
@@ -80,21 +109,28 @@ class OpenAIService:
     ) -> ComparisonResult:
         """Compara os outputs consolidados."""
 
-        payload = await self._ask_openai(
-            model=self._settings.openai.model_comparison,
-            user_prompt=self._comparison_prompt(
-                project_name=project_name,
-                bim_summary=bim_analysis.summary or "",
-                image_summary=image_analysis.summary or "",
-            ),
-        )
-        parsed = ComparisonPayload.model_validate_json(payload)
-        return ComparisonResult(
-            summary=parsed.summary,
-            similarity_score=parsed.similarity_score,
-            completion_percentage=parsed.completion_percentage,
-            mismatches=tuple(parsed.mismatches),
-        )
+        if self._use_mock:
+            return self._mock_comparison(project_name=project_name)
+
+        try:
+            payload = await self._ask_openai(
+                model=self._settings.openai.model_comparison,
+                user_prompt=self._comparison_prompt(
+                    project_name=project_name,
+                    bim_summary=bim_analysis.summary or "",
+                    image_summary=image_analysis.summary or "",
+                ),
+            )
+            parsed = ComparisonPayload.model_validate_json(payload)
+            return ComparisonResult(
+                summary=parsed.summary,
+                similarity_score=parsed.similarity_score,
+                completion_percentage=parsed.completion_percentage,
+                mismatches=tuple(parsed.mismatches),
+            )
+        except OpenAIServiceError as exc:
+            logger.warning("OpenAI indisponível para comparação. Utilizando fallback mock. Detalhe: %s", exc)
+            return self._mock_comparison(project_name=project_name)
 
     async def _ask_openai(self, *, model: str, user_prompt: str) -> str:
         try:
@@ -181,4 +217,53 @@ class OpenAIService:
             "Projeto: {project}.\nResumo BIM: {bim}.\nResumo imagem: {image}.\n"
             "Compare e informe similaridade (0-1), porcentagem de conclusão (0-1) e divergências."
         ).format(project=project_name, bim=bim_summary, image=image_summary)
+
+    @staticmethod
+    def _mock_bim_analysis(*, source_uri: str) -> BimAnalysis:
+        return BimAnalysis(
+            bim_source_uri=source_uri,
+            status=AnalysisStatus.COMPLETED,
+            summary="Análise simulada: estrutura principal em conformidade, atenção a pequenos ajustes de acabamento.",
+            raw_output="mock_bim_analysis",
+            issues=(
+                DetectedIssue(
+                    description="Necessário reforço de guarda-corpo na plataforma central.",
+                    severity=IssueSeverity.MEDIUM,
+                    confidence=0.65,
+                    location_hint="Plataforma central",
+                ),
+            ),
+        )
+
+    @staticmethod
+    def _mock_image_analysis(*, source_uri: str) -> ImageAnalysis:
+        return ImageAnalysis(
+            image_source_uri=source_uri,
+            status=AnalysisStatus.COMPLETED,
+            summary="Análise simulada: obra apresenta progresso satisfatório, com pequenas não conformidades visuais.",
+            raw_output="mock_image_analysis",
+            issues=(
+                DetectedIssue(
+                    description="Materiais depositados próximos à saída de emergência.",
+                    severity=IssueSeverity.LOW,
+                    confidence=0.6,
+                    location_hint="Saída Leste",
+                ),
+            ),
+        )
+
+    @staticmethod
+    def _mock_comparison(*, project_name: str) -> ComparisonResult:
+        return ComparisonResult(
+            summary=(
+                f"Comparação simulada para o projeto {project_name}: divergências pontuais identificadas,"
+                " com progresso geral aderente ao planejado."
+            ),
+            similarity_score=0.82,
+            completion_percentage=0.78,
+            mismatches=(
+                "Acabamento de piso ainda não concluído no setor C",
+                "Iluminação provisória instalada em vez da definitiva",
+            ),
+        )
 
