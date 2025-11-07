@@ -1,0 +1,2 @@
+"""Configuração dos endpoints HTTP."""
+
