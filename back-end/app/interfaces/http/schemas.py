@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Iterable, Optional
 from uuid import UUID
 
-from pydantic import AnyHttpUrl, BaseModel, Field
+from pydantic import BaseModel, Field
 
 from app.domain.entities import (
     AnalysisStatus,
@@ -167,11 +167,4 @@ class ProjectAnalysisListResponse(BaseModel):
     def from_entities(cls, entities: Iterable[ProjectAnalysis]) -> "ProjectAnalysisListResponse":
         return cls(items=[ProjectAnalysisListItem.from_entity(item) for item in entities])
 
-
-class AnalyzeProjectPayload(BaseModel):
-    project_name: str
-    bim_url: AnyHttpUrl
-    image_url: AnyHttpUrl
-    requested_by: Optional[str] = None
-    context: Optional[str] = None
 
