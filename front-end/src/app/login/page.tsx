@@ -57,22 +57,27 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
-      <div
-        className="flex-1 relative bg-cover bg-center hidden md:block"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('https://mobilidade.estadao.com.br/wp-content/uploads/2023/11/CPTM-e1703719914975.jpg')`,
-        }}
-      >
-        <div className="absolute top-0 left-0 w-full h-24 flex overflow-hidden">
+      <div className="flex-1 relative hidden md:block overflow-hidden">
+        <Image
+          src="https://mobilidade.estadao.com.br/wp-content/uploads/2023/11/CPTM-e1703719914975.jpg"
+          alt="CPTM Metro Background"
+          fill
+          className="object-cover"
+          priority
+          quality={85}
+          sizes="(max-width: 768px) 0vw, 60vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/50 z-[1]"></div>
+        <div className="absolute top-0 left-0 w-full h-24 flex overflow-hidden z-[2]">
           <div className="h-full w-1/5 bg-[#A8034F] animate-pulse"></div>
           <div className="h-full w-1/5 bg-[#00829B] animate-pulse" style={{ animationDelay: '0.2s' }}></div>
           <div className="h-full w-1/5 bg-[#F55F1A] animate-pulse" style={{ animationDelay: '0.4s' }}></div>
           <div className="h-full w-1/5 bg-[#1C146B] animate-pulse" style={{ animationDelay: '0.6s' }}></div>
           <div className="h-full w-1/5 bg-[#00B052] animate-pulse" style={{ animationDelay: '0.8s' }}></div>
         </div>
-        <div className="absolute top-24 left-0 w-full h-32 bg-gradient-to-b from-black/40 to-transparent"></div>
+        <div className="absolute top-24 left-0 w-full h-32 bg-gradient-to-b from-black/40 to-transparent z-[2]"></div>
 
-        <div className="absolute bottom-8 right-6 z-10">
+        <div className="absolute bottom-8 right-6 z-[3]">
           <div className="bg-gradient-to-r from-[#00829B]/90 to-[#1C146B]/90 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-2xl">
             <div className="flex items-center gap-4 mb-3">
               <Image
