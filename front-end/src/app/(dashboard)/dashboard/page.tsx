@@ -93,7 +93,7 @@ export default function DashboardPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Total Projects */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition select-none">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-600">
                   Total de Projetos
@@ -109,7 +109,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Analyzed Evidences */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition select-none">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-600">
                   Evidências Analisadas
@@ -125,7 +125,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Detected Issues */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition select-none">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-600">
                   Problemas Detectados
