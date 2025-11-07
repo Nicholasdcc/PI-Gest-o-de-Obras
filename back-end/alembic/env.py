@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -12,15 +13,17 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from alembic import context
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from app.infrastructure.db.base import Base
 
 # Interpretar configurações do alembic.ini.
 config = context.config
 
-# Permitir override da URL pelo ambiente (utilizado em docker-compose).
-database_url = os.getenv("DATABASE_URL")
-if database_url:
-    config.set_main_option("sqlalchemy.url", database_url)
+config.set_main_option(
+    "sqlalchemy.url",
+    "mysql+aiomysql://metro:metro@127.0.0.1:3306/metro_bim",
+)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

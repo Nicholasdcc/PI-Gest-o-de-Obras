@@ -24,6 +24,7 @@ analysis_status_enum = sa.Enum(
     "completed",
     "failed",
     name="analysis_status",
+    native_enum=False,
 )
 
 
@@ -55,7 +56,7 @@ def upgrade() -> None:
         sa.Column("summary", sa.Text(), nullable=True),
         sa.Column("raw_output", sa.Text(), nullable=True),
         sa.Column("compliance_notes", sa.Text(), nullable=True),
-        sa.Column("issues", sa.JSON(), nullable=False, server_default=sa.text("'[]'")),
+        sa.Column("issues", sa.JSON(), nullable=False, server_default=None),
         sa.Column("status", analysis_status_enum, nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
@@ -73,7 +74,7 @@ def upgrade() -> None:
         sa.Column("summary", sa.Text(), nullable=True),
         sa.Column("raw_output", sa.Text(), nullable=True),
         sa.Column("observed_conditions", sa.Text(), nullable=True),
-        sa.Column("issues", sa.JSON(), nullable=False, server_default=sa.text("'[]'")),
+        sa.Column("issues", sa.JSON(), nullable=False, server_default=None),
         sa.Column("status", analysis_status_enum, nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
@@ -91,7 +92,7 @@ def upgrade() -> None:
         sa.Column("summary", sa.Text(), nullable=True),
         sa.Column("similarity_score", sa.Float(), nullable=False),
         sa.Column("completion_percentage", sa.Float(), nullable=False),
-        sa.Column("mismatches", sa.JSON(), nullable=False, server_default=sa.text("'[]'")),
+        sa.Column("mismatches", sa.JSON(), nullable=False, server_default=None),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
 

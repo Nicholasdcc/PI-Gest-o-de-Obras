@@ -10,6 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 
+back-end/storage/
 venv/
 ./.venv
 __pycache__/
