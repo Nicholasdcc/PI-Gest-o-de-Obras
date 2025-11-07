@@ -12,6 +12,10 @@ import { IfcUpload } from './IfcUpload'
 import { IfcStatus } from './IfcStatus'
 import { IfcElementsList } from './IfcElementsList'
 import { IfcComparisons } from './IfcComparisons'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import ListAltIcon from '@mui/icons-material/ListAlt'
+import SearchIcon from '@mui/icons-material/Search'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 
 interface IfcSectionProps {
   projectId: string
@@ -77,7 +81,7 @@ export function IfcSection({ projectId }: IfcSectionProps) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6">
         <div className="flex items-start">
-          <span className="text-red-600 text-2xl mr-3">⚠️</span>
+          <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626', mr: 1.5 }} />
           <div className="flex-1">
             <h3 className="text-red-800 font-semibold mb-2">
               Erro ao carregar modelo IFC
@@ -102,7 +106,7 @@ export function IfcSection({ projectId }: IfcSectionProps) {
         {!showUpload ? (
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-8">
             <div className="text-center">
-              <span className="text-6xl mb-4 block">📐</span>
+              <AccountTreeIcon sx={{ fontSize: 80, color: '#6b7280', mb: 2 }} />
               <h3 className="text-lg font-bold text-gray-800 mb-2">
                 Nenhum modelo IFC vinculado
               </h3>
@@ -159,14 +163,14 @@ export function IfcSection({ projectId }: IfcSectionProps) {
             onClick={handleShowElements}
             className="bg-white border-2 border-[#001489] text-[#001489] px-6 py-4 rounded-lg hover:bg-[#001489] hover:text-white transition font-semibold flex items-center justify-center gap-2"
           >
-            <span className="text-xl">📋</span>
+            <ListAltIcon sx={{ fontSize: 24 }} />
             {showElements ? 'Ocultar Elementos' : 'Ver Elementos do Modelo'}
           </button>
           <button
             onClick={handleShowComparisons}
             className="bg-white border-2 border-[#001489] text-[#001489] px-6 py-4 rounded-lg hover:bg-[#001489] hover:text-white transition font-semibold flex items-center justify-center gap-2"
           >
-            <span className="text-xl">🔍</span>
+            <SearchIcon sx={{ fontSize: 24 }} />
             {showComparisons ? 'Ocultar Checagens' : 'Ver Checagens IFC × Evidências'}
           </button>
         </div>

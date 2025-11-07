@@ -11,6 +11,10 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useProjectEvidences } from '@/hooks/useEvidence'
 import { EvidenceCard } from '@/components/evidence/EvidenceCard'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import ImageIcon from '@mui/icons-material/Image'
 
 export default function EvidencesPage() {
   const params = useParams()
@@ -24,9 +28,9 @@ export default function EvidencesPage() {
         <div className="mb-8">
           <Link
             href={`/projects/${projectId}`}
-            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2"
+            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2 font-semibold"
           >
-            <span>←</span> Voltar para Projeto
+            <ArrowBackIcon sx={{ fontSize: 20 }} /> Voltar para Projeto
           </Link>
           <div className="flex items-center justify-between mt-4">
             <div>
@@ -41,7 +45,7 @@ export default function EvidencesPage() {
               href={`/projects/${projectId}/evidences/upload`}
               className="bg-[#001489] text-white px-6 py-3 rounded-lg hover:bg-[#001489]/90 transition font-semibold flex items-center gap-2"
             >
-              <span className="text-xl">➕</span>
+              <AddCircleOutlineIcon sx={{ fontSize: 24 }} />
               Enviar Evidência
             </Link>
           </div>
@@ -60,7 +64,7 @@ export default function EvidencesPage() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <span className="text-red-600 text-2xl">⚠️</span>
+                <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626' }} />
               </div>
               <div className="ml-4 flex-1">
                 <h3 className="text-red-800 font-semibold mb-2">
@@ -100,7 +104,7 @@ export default function EvidencesPage() {
               </div>
             ) : (
               <div className="bg-white rounded-xl shadow-lg p-12 text-center border border-gray-200">
-                <div className="text-6xl mb-4">📷</div>
+                <ImageIcon sx={{ fontSize: 96, color: '#9ca3af', mb: 2 }} />
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
                   Nenhuma evidência encontrada
                 </h3>

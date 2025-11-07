@@ -13,6 +13,12 @@ import { useProjectDetail } from '@/hooks/useProjects'
 import { generateReport, getLatestReport } from '@/lib/api/endpoints'
 import { ReportFormat } from '@/lib/api/types'
 import { formatDate } from '@/utils/formatting'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import AssessmentIcon from '@mui/icons-material/Assessment'
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'
+import LanguageIcon from '@mui/icons-material/Language'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import DownloadIcon from '@mui/icons-material/Download'
 
 export default function ReportsPage() {
   const params = useParams()
@@ -68,9 +74,9 @@ export default function ReportsPage() {
         <div className="mb-8">
           <Link
             href={`/projects/${projectId}`}
-            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2"
+            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2 font-semibold"
           >
-            <span>←</span> Voltar para Projeto
+            <ArrowBackIcon sx={{ fontSize: 20 }} /> Voltar para Projeto
           </Link>
           <h1 className="text-3xl font-bold text-[#001489] mb-2 mt-4">
             Relatórios de Inspeção
@@ -104,7 +110,7 @@ export default function ReportsPage() {
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <div className="text-center">
-                  <div className="text-3xl mb-2">📄</div>
+                  <PictureAsPdfIcon sx={{ fontSize: 40, color: selectedFormat === 'pdf' ? '#001489' : '#6b7280', mb: 1 }} />
                   <h3 className="font-semibold text-gray-800">PDF</h3>
                   <p className="text-xs text-gray-600 mt-1">
                     Ideal para impressão e compartilhamento
@@ -122,7 +128,7 @@ export default function ReportsPage() {
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <div className="text-center">
-                  <div className="text-3xl mb-2">🌐</div>
+                  <LanguageIcon sx={{ fontSize: 40, color: selectedFormat === 'html' ? '#001489' : '#6b7280', mb: 1 }} />
                   <h3 className="font-semibold text-gray-800">HTML</h3>
                   <p className="text-xs text-gray-600 mt-1">
                     Visualização interativa no navegador
@@ -145,7 +151,7 @@ export default function ReportsPage() {
               </>
             ) : (
               <>
-                <span className="text-xl">📊</span>
+                <AssessmentIcon sx={{ fontSize: 24 }} />
                 Gerar Relatório {selectedFormat.toUpperCase()}
               </>
             )}
@@ -217,7 +223,7 @@ export default function ReportsPage() {
                     rel="noopener noreferrer"
                     className="bg-[#001489] text-white px-4 py-2 rounded-lg hover:bg-[#001489]/90 transition text-sm font-semibold inline-flex items-center gap-2"
                   >
-                    <span>👁️</span>
+                    <VisibilityIcon sx={{ fontSize: 18 }} />
                     Visualizar
                   </a>
                   
@@ -226,14 +232,14 @@ export default function ReportsPage() {
                     download
                     className="border-2 border-[#001489] text-[#001489] px-4 py-2 rounded-lg hover:bg-[#001489] hover:text-white transition text-sm font-semibold inline-flex items-center gap-2"
                   >
-                    <span>⬇️</span>
+                    <DownloadIcon sx={{ fontSize: 18 }} />
                     Baixar
                   </a>
                 </div>
               </div>
               
-              <div className="text-6xl ml-6">
-                📊
+              <div className="ml-6">
+                <AssessmentIcon sx={{ fontSize: 80, color: '#001489' }} />
               </div>
             </div>
           </div>
@@ -242,7 +248,7 @@ export default function ReportsPage() {
         {/* No Report State */}
         {!isLoadingReport && !latestReport && !isGenerating && (
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-            <div className="text-6xl mb-4">📊</div>
+            <AssessmentIcon sx={{ fontSize: 80, color: '#6b7280', mb: 2 }} />
             <h3 className="text-lg font-bold text-gray-800 mb-2">
               Nenhum Relatório Disponível
             </h3>

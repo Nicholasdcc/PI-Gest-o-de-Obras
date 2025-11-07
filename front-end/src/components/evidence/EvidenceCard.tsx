@@ -10,6 +10,7 @@ import React from 'react'
 import Link from 'next/link'
 import { formatDateTime, formatAnalysisStatus } from '@/utils/formatting'
 import type { Evidence } from '@/lib/api/types'
+import ImageIcon from '@mui/icons-material/Image'
 
 interface EvidenceCardProps {
   evidence: Evidence
@@ -38,7 +39,7 @@ export function EvidenceCard({ evidence, projectId }: EvidenceCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <span className="text-5xl">📷</span>
+            <ImageIcon sx={{ fontSize: 80, color: '#9ca3af' }} />
           </div>
         )}
 

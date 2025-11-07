@@ -10,6 +10,9 @@ import React from 'react'
 import Link from 'next/link'
 import { useProjects } from '@/hooks/useProjects'
 import { ProjectList } from '@/components/projects/ProjectList'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 
 export default function ProjectsPage() {
   const { projects, isLoading, error, refetch } = useProjects()
@@ -31,7 +34,7 @@ export default function ProjectsPage() {
             href="/projects/new"
             className="bg-[#001489] text-white px-6 py-3 rounded-lg hover:bg-[#001489]/90 transition font-semibold flex items-center gap-2"
           >
-            <span className="text-xl">➕</span>
+            <AddCircleOutlineIcon sx={{ fontSize: 24 }} />
             Novo Projeto
           </Link>
         </div>
@@ -49,7 +52,7 @@ export default function ProjectsPage() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <span className="text-red-600 text-2xl">⚠️</span>
+                <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626' }} />
               </div>
               <div className="ml-4 flex-1">
                 <h3 className="text-red-800 font-semibold mb-2">
@@ -83,7 +86,7 @@ export default function ProjectsPage() {
         {/* Empty State */}
         {!isLoading && !error && projects.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg p-12 text-center border border-gray-200">
-            <div className="text-6xl mb-4">🏗️</div>
+            <AccountTreeIcon sx={{ fontSize: 96, color: '#001489', mb: 2 }} />
             <h3 className="text-xl font-bold text-gray-800 mb-2">
               Nenhum projeto cadastrado
             </h3>

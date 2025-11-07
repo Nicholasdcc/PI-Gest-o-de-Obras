@@ -13,6 +13,8 @@ import { createProject } from '@/lib/api/endpoints'
 import { getErrorMessage } from '@/utils/errors'
 import { ProjectForm } from '@/components/projects/ProjectForm'
 import type { ProjectFormData } from '@/lib/api/types'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 
 export default function NewProjectPage() {
   const router = useRouter()
@@ -45,9 +47,9 @@ export default function NewProjectPage() {
         <div className="mb-8">
           <Link
             href="/projects"
-            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2"
+            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2 font-semibold"
           >
-            <span>←</span> Voltar para Projetos
+            <ArrowBackIcon sx={{ fontSize: 20 }} /> Voltar para Projetos
           </Link>
           <h1 className="text-3xl font-bold text-[#001489] mb-2 mt-4">
             Novo Projeto
@@ -61,7 +63,7 @@ export default function NewProjectPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
             <div className="flex items-start">
-              <span className="text-red-600 text-xl mr-3">⚠️</span>
+              <WarningAmberIcon sx={{ fontSize: 28, color: '#dc2626', mr: 1.5 }} />
               <div className="flex-1">
                 <h3 className="text-red-800 font-semibold mb-1">
                   Erro ao criar projeto

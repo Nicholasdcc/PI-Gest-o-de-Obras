@@ -8,6 +8,8 @@
 
 import React, { useState, useRef } from 'react'
 import { FILE_UPLOAD_CONSTRAINTS } from '@/lib/api/types'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CameraAltIcon from '@mui/icons-material/CameraAlt'
 
 interface EvidenceUploadProps {
   onUpload: (file: File, description: string) => Promise<void>
@@ -145,7 +147,7 @@ export function EvidenceUpload({ onUpload, isLoading = false }: EvidenceUploadPr
           >
             <div className="text-center">
               <span className="text-3xl mb-2 block">
-                {file ? '✓' : '📷'}
+                {file ? <CheckCircleIcon sx={{ fontSize: 48 }} /> : <CameraAltIcon sx={{ fontSize: 48 }} />}
               </span>
               <p className="text-sm font-semibold text-gray-700">
                 {file ? file.name : 'Clique para selecionar'}

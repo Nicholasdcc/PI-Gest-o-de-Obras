@@ -9,6 +9,7 @@
 import React from 'react'
 import { ProjectCard } from './ProjectCard'
 import type { Project } from '@/lib/api/types'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 interface ProjectListProps {
   projects: Project[]
@@ -18,7 +19,7 @@ export function ProjectList({ projects }: ProjectListProps) {
   if (projects.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">📋</div>
+        <FolderOpenIcon sx={{ fontSize: 96, color: '#6b7280', mb: 2 }} />
         <h3 className="text-xl font-bold text-gray-800 mb-2">
           Nenhum projeto encontrado
         </h3>

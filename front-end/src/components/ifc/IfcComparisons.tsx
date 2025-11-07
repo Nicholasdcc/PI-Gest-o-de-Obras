@@ -8,6 +8,9 @@
 
 import React from 'react'
 import type { IfcComparison } from '@/lib/api/types'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CircleIcon from '@mui/icons-material/Circle'
 
 interface IfcComparisonsProps {
   comparisons: IfcComparison[]
@@ -22,25 +25,25 @@ export function IfcComparisons({ comparisons, isLoading, error }: IfcComparisons
         return {
           label: 'Alta',
           color: 'bg-red-100 text-red-800 border-red-200',
-          icon: '🔴',
+          icon: <CircleIcon sx={{ fontSize: 14, color: '#dc2626' }} />,
         }
       case 'medium':
         return {
           label: 'Média',
           color: 'bg-orange-100 text-orange-800 border-orange-200',
-          icon: '🟠',
+          icon: <CircleIcon sx={{ fontSize: 14, color: '#ea580c' }} />,
         }
       case 'low':
         return {
           label: 'Baixa',
           color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-          icon: '🟡',
+          icon: <CircleIcon sx={{ fontSize: 14, color: '#ca8a04' }} />,
         }
       default:
         return {
           label: 'Indefinida',
           color: 'bg-gray-100 text-gray-800 border-gray-200',
-          icon: '⚪',
+          icon: <CircleIcon sx={{ fontSize: 14, color: '#d1d5db' }} />,
         }
     }
   }
@@ -60,7 +63,7 @@ export function IfcComparisons({ comparisons, isLoading, error }: IfcComparisons
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6">
         <div className="flex items-start">
-          <span className="text-red-600 text-2xl mr-3">⚠️</span>
+          <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626', mr: 1.5 }} />
           <div>
             <h3 className="text-red-800 font-semibold mb-1">
               Erro ao carregar comparações
@@ -76,7 +79,7 @@ export function IfcComparisons({ comparisons, isLoading, error }: IfcComparisons
     return (
       <div className="bg-green-50 border border-green-200 rounded-xl p-6">
         <div className="text-center text-green-800">
-          <span className="text-4xl mb-2 block">✓</span>
+          <CheckCircleIcon sx={{ fontSize: 64, color: '#16a34a', mb: 1 }} />
           <h3 className="font-semibold mb-1">Nenhuma inconsistência detectada</h3>
           <p className="text-sm">
             O modelo IFC está alinhado com as evidências enviadas.
@@ -107,18 +110,18 @@ export function IfcComparisons({ comparisons, isLoading, error }: IfcComparisons
         </div>
         <div className="flex gap-4 mt-3 text-sm">
           {grouped.high.length > 0 && (
-            <span className="text-red-600">
-              🔴 {grouped.high.length} Alta
+            <span className="text-red-600 flex items-center gap-1">
+              <CircleIcon sx={{ fontSize: 14 }} /> {grouped.high.length} Alta
             </span>
           )}
           {grouped.medium.length > 0 && (
-            <span className="text-orange-600">
-              🟠 {grouped.medium.length} Média
+            <span className="text-orange-600 flex items-center gap-1">
+              <CircleIcon sx={{ fontSize: 14 }} /> {grouped.medium.length} Média
             </span>
           )}
           {grouped.low.length > 0 && (
-            <span className="text-yellow-600">
-              🟡 {grouped.low.length} Baixa
+            <span className="text-yellow-600 flex items-center gap-1">
+              <CircleIcon sx={{ fontSize: 14 }} /> {grouped.low.length} Baixa
             </span>
           )}
         </div>

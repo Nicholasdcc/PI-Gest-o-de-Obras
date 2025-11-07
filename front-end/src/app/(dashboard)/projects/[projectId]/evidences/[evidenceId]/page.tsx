@@ -15,6 +15,12 @@ import { useAnalysis } from '@/hooks/useAnalysis'
 import { AnalysisStatus } from '@/components/evidence/AnalysisStatus'
 import { IssuesList } from '@/components/issues/IssuesList'
 import { formatDate } from '@/utils/formatting'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import SearchIcon from '@mui/icons-material/Search'
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
 export default function EvidenceDetailPage() {
   const params = useParams()
@@ -52,9 +58,9 @@ export default function EvidenceDetailPage() {
         <div className="mb-8">
           <Link
             href={`/projects/${projectId}`}
-            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2"
+            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2 font-semibold"
           >
-            <span>←</span> Voltar para Projeto
+            <ArrowBackIcon sx={{ fontSize: 20 }} /> Voltar para Projeto
           </Link>
         </div>
 
@@ -71,7 +77,7 @@ export default function EvidenceDetailPage() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <span className="text-red-600 text-2xl">⚠️</span>
+                <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626' }} />
               </div>
               <div className="ml-4 flex-1">
                 <h3 className="text-red-800 font-semibold mb-2">
@@ -190,7 +196,7 @@ export default function EvidenceDetailPage() {
                       </>
                     ) : (
                       <>
-                        <span className="text-xl">🔍</span>
+                        <SearchIcon sx={{ fontSize: 24 }} />
                         Analisar Evidência
                       </>
                     )}
@@ -211,7 +217,7 @@ export default function EvidenceDetailPage() {
                       </>
                     ) : (
                       <>
-                        <span className="text-xl">🔄</span>
+                        <RefreshIcon sx={{ fontSize: 24 }} />
                         Tentar Novamente
                       </>
                     )}
@@ -241,7 +247,7 @@ export default function EvidenceDetailPage() {
                (!evidence.issues || evidence.issues.length === 0) && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-6">
                   <div className="text-center">
-                    <span className="text-4xl mb-3 block">✓</span>
+                    <CheckCircleIcon sx={{ fontSize: 64, color: '#16a34a', mb: 1.5 }} />
                     <h3 className="text-green-900 font-semibold mb-2">
                       Nenhum Problema Detectado
                     </h3>
@@ -256,7 +262,7 @@ export default function EvidenceDetailPage() {
               {evidence.status === 'pending' && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
                   <div className="text-center">
-                    <span className="text-4xl mb-3 block">⏳</span>
+                    <HourglassEmptyIcon sx={{ fontSize: 60, color: '#1e40af', mb: 2 }} />
                     <h3 className="text-blue-900 font-semibold mb-2">
                       Aguardando Análise
                     </h3>
@@ -298,7 +304,7 @@ export default function EvidenceDetailPage() {
               {evidence.status === 'error' && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-6">
                   <div className="text-center">
-                    <span className="text-4xl mb-3 block">⚠️</span>
+                    <WarningAmberIcon sx={{ fontSize: 64, color: '#dc2626', mb: 1.5 }} />
                     <h3 className="text-red-900 font-semibold mb-2">
                       Erro na Análise
                     </h3>

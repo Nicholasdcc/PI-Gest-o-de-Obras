@@ -8,6 +8,9 @@
 
 import React from 'react'
 import type { IfcModel } from '@/lib/api/types'
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ErrorIcon from '@mui/icons-material/Error'
 
 interface IfcStatusProps {
   model: IfcModel
@@ -21,7 +24,7 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
         return {
           label: 'Processando',
           color: 'blue',
-          icon: '⏳',
+          icon: <HourglassEmptyIcon sx={{ fontSize: 32 }} />,
           bgColor: 'bg-blue-50',
           borderColor: 'border-blue-200',
           textColor: 'text-blue-800',
@@ -30,7 +33,7 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
         return {
           label: 'Pronto',
           color: 'green',
-          icon: '✓',
+          icon: <CheckCircleIcon sx={{ fontSize: 32 }} />,
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200',
           textColor: 'text-green-800',
@@ -39,7 +42,7 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
         return {
           label: 'Erro no processamento',
           color: 'red',
-          icon: '⚠️',
+          icon: <ErrorIcon sx={{ fontSize: 32 }} />,
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200',
           textColor: 'text-red-800',
@@ -54,7 +57,7 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">{statusInfo.icon}</span>
+            {statusInfo.icon}
             <h3 className={`text-lg font-bold ${statusInfo.textColor}`}>
               Modelo IFC
             </h3>
@@ -78,9 +81,10 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
 
       {/* Status-specific messages */}
       {model.status === 'processing' && (
-        <div className="mt-4 p-3 bg-white rounded-lg">
+        <div className="mt-4 p-3 bg-white rounded-lg flex items-start gap-2">
+          <HourglassEmptyIcon sx={{ fontSize: 20, color: '#1e40af' }} />
           <p className="text-sm text-blue-800">
-            ⏳ O modelo está sendo processado. Isso pode levar alguns minutos
+            O modelo está sendo processado. Isso pode levar alguns minutos
             dependendo do tamanho. Atualize a página para verificar o progresso.
           </p>
         </div>
@@ -105,8 +109,9 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
 
       {model.status === 'ready' && (
         <div className="mt-4 p-3 bg-white rounded-lg">
-          <p className="text-sm text-green-800">
-            ✓ Modelo IFC processado com sucesso! Use as opções abaixo para
+          <p className="text-sm text-green-800 flex items-center gap-2">
+            <CheckCircleIcon sx={{ fontSize: 18 }} />
+            Modelo IFC processado com sucesso! Use as opções abaixo para
             visualizar elementos ou comparar com evidências.
           </p>
         </div>

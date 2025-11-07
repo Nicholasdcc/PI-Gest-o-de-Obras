@@ -6,6 +6,8 @@
 
 import React from 'react'
 import { Issue, IssueSeverity } from '@/lib/api/types'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CircleIcon from '@mui/icons-material/Circle'
 
 interface IssuesListProps {
   issues: Issue[]
@@ -27,18 +29,18 @@ const getSeverityColor = (severity?: IssueSeverity): string => {
   }
 }
 
-const getSeverityIcon = (severity?: IssueSeverity): string => {
+const getSeverityIcon = (severity?: IssueSeverity): React.ReactNode => {
   switch (severity) {
     case 'critical':
-      return '🔴'
+      return <CircleIcon sx={{ fontSize: 14, color: '#dc2626' }} />
     case 'high':
-      return '🟠'
+      return <CircleIcon sx={{ fontSize: 14, color: '#ea580c' }} />
     case 'medium':
-      return '🟡'
+      return <CircleIcon sx={{ fontSize: 14, color: '#ca8a04' }} />
     case 'low':
-      return '🔵'
+      return <CircleIcon sx={{ fontSize: 14, color: '#2563eb' }} />
     default:
-      return '⚪'
+      return <CircleIcon sx={{ fontSize: 14, color: '#d1d5db' }} />
   }
 }
 
@@ -70,7 +72,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
   if (issues.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        <div className="text-5xl mb-3">✓</div>
+        <CheckCircleIcon sx={{ fontSize: 80, color: '#16a34a', mb: 1.5 }} />
         <p className="text-lg font-semibold text-gray-700 mb-1">
           Nenhum Problema Detectado
         </p>

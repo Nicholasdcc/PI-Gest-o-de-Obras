@@ -11,6 +11,10 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { EvidenceUpload } from '@/components/evidence/EvidenceUpload'
 import { uploadEvidence } from '@/lib/api/endpoints'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CancelIcon from '@mui/icons-material/Cancel'
 
 export default function UploadEvidencePage() {
   const params = useParams()
@@ -41,9 +45,9 @@ export default function UploadEvidencePage() {
         <div className="mb-8">
           <Link
             href={`/projects/${projectId}`}
-            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2"
+            className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2 font-semibold"
           >
-            <span>←</span> Voltar para Projeto
+            <ArrowBackIcon sx={{ fontSize: 20 }} /> Voltar para Projeto
           </Link>
           <h1 className="text-3xl font-bold text-[#001489] mb-2 mt-4">
             Enviar Evidência
@@ -64,7 +68,7 @@ export default function UploadEvidencePage() {
           {error && (
             <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-start">
-                <span className="text-red-600 text-xl mr-3">⚠️</span>
+                <WarningAmberIcon sx={{ fontSize: 28, color: '#dc2626', mr: 1.5 }} />
                 <div className="flex-1">
                   <h4 className="text-red-800 font-semibold mb-1">
                     Erro no Upload
@@ -82,27 +86,27 @@ export default function UploadEvidencePage() {
             </h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-start">
-                <span className="text-green-600 mr-2">✓</span>
+                <CheckCircleIcon sx={{ fontSize: 18, color: '#16a34a', mr: 1 }} />
                 <span>Tire fotos nítidas e bem iluminadas</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-600 mr-2">✓</span>
+                <CheckCircleIcon sx={{ fontSize: 18, color: '#16a34a', mr: 1 }} />
                 <span>Foque em áreas específicas de interesse</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-600 mr-2">✓</span>
+                <CheckCircleIcon sx={{ fontSize: 18, color: '#16a34a', mr: 1 }} />
                 <span>Inclua referências de escala quando possível</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-600 mr-2">✓</span>
+                <CheckCircleIcon sx={{ fontSize: 18, color: '#16a34a', mr: 1 }} />
                 <span>Capture múltiplos ângulos da mesma área</span>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-2">✗</span>
+                <CancelIcon sx={{ fontSize: 18, color: '#dc2626', mr: 1 }} />
                 <span>Evite fotos tremidas ou desfocadas</span>
               </li>
               <li className="flex items-start">
-                <span className="text-red-600 mr-2">✗</span>
+                <CancelIcon sx={{ fontSize: 18, color: '#dc2626', mr: 1 }} />
                 <span>Não inclua informações confidenciais visíveis</span>
               </li>
             </ul>

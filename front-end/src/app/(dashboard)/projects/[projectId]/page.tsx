@@ -12,6 +12,11 @@ import { useParams } from 'next/navigation'
 import { useProjectDetail } from '@/hooks/useProjects'
 import { formatDate, formatProjectStatus, formatAnalysisStatus } from '@/utils/formatting'
 import { IfcSection } from '@/components/ifc/IfcSection'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ImageIcon from '@mui/icons-material/Image'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -34,7 +39,7 @@ export default function ProjectDetailPage() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <span className="text-red-600 text-2xl">⚠️</span>
+                <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626' }} />
               </div>
               <div className="ml-4 flex-1">
                 <h3 className="text-red-800 font-semibold mb-2">
@@ -59,9 +64,9 @@ export default function ProjectDetailPage() {
             <div className="mb-8">
               <Link
                 href="/projects"
-                className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2"
+                className="text-[#001489] hover:underline mb-4 inline-flex items-center gap-2 font-semibold"
               >
-                <span>←</span> Voltar para Projetos
+                <ArrowBackIcon sx={{ fontSize: 20 }} /> Voltar para Projetos
               </Link>
               <div className="flex items-start justify-between mt-4">
                 <div className="flex-1">
@@ -96,7 +101,7 @@ export default function ProjectDetailPage() {
                   <h3 className="text-sm font-semibold text-gray-600">
                     Evidências
                   </h3>
-                  <span className="text-2xl">📸</span>
+                  <ImageIcon sx={{ fontSize: 32, color: '#2563eb' }} />
                 </div>
                 <p className="text-3xl font-bold text-blue-600">
                   {project.evidence_count || 0}
@@ -108,7 +113,7 @@ export default function ProjectDetailPage() {
                   <h3 className="text-sm font-semibold text-gray-600">
                     Problemas Detectados
                   </h3>
-                  <span className="text-2xl">⚠️</span>
+                  <WarningAmberIcon sx={{ fontSize: 32, color: '#ea580c' }} />
                 </div>
                 <p className="text-3xl font-bold text-orange-600">
                   {project.issues_count || 0}
@@ -120,7 +125,7 @@ export default function ProjectDetailPage() {
                   <h3 className="text-sm font-semibold text-gray-600">
                     Criado em
                   </h3>
-                  <span className="text-2xl">📅</span>
+                  <CalendarTodayIcon sx={{ fontSize: 32, color: '#6b7280' }} />
                 </div>
                 <p className="text-lg font-semibold text-gray-800">
                   {formatDate(project.created_at)}
@@ -168,7 +173,7 @@ export default function ProjectDetailPage() {
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                          <span className="text-4xl">📷</span>
+                          <ImageIcon sx={{ fontSize: 64, color: '#9ca3af' }} />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -200,7 +205,7 @@ export default function ProjectDetailPage() {
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <div className="text-5xl mb-3">📷</div>
+                  <ImageIcon sx={{ fontSize: 80, color: '#9ca3af', mb: 1.5 }} />
                   <p className="mb-4">Nenhuma evidência enviada ainda</p>
                   <Link
                     href={`/projects/${projectId}/evidences/upload`}
@@ -215,7 +220,7 @@ export default function ProjectDetailPage() {
             {/* IFC Section */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-8">
               <h2 className="text-xl font-bold text-[#001489] mb-6 flex items-center gap-2">
-                <span>📐</span>
+                <AccountTreeIcon sx={{ fontSize: 28 }} />
                 Modelo IFC
               </h2>
               <IfcSection projectId={projectId} />

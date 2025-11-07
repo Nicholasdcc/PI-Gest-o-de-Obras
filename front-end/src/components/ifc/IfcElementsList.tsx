@@ -8,6 +8,8 @@
 
 import React from 'react'
 import type { IfcElement } from '@/lib/api/types'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import ListAltIcon from '@mui/icons-material/ListAlt'
 
 interface IfcElementsListProps {
   elements: IfcElement[]
@@ -31,7 +33,7 @@ export function IfcElementsList({ elements, isLoading, error }: IfcElementsListP
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6">
         <div className="flex items-start">
-          <span className="text-red-600 text-2xl mr-3">⚠️</span>
+          <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626', mr: 1.5 }} />
           <div>
             <h3 className="text-red-800 font-semibold mb-1">
               Erro ao carregar elementos
@@ -47,7 +49,7 @@ export function IfcElementsList({ elements, isLoading, error }: IfcElementsListP
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
         <div className="text-center text-gray-600">
-          <span className="text-4xl mb-2 block">📋</span>
+          <ListAltIcon sx={{ fontSize: 64, color: '#6b7280', mb: 1 }} />
           <p className="text-sm">Nenhum elemento encontrado no modelo IFC.</p>
         </div>
       </div>

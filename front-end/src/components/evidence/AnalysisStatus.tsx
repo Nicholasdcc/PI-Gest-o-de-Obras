@@ -9,6 +9,10 @@
 import React from 'react'
 import { formatAnalysisStatus } from '@/utils/formatting'
 import type { AnalysisStatus } from '@/lib/api/types'
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
+import SettingsIcon from '@mui/icons-material/Settings'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ErrorIcon from '@mui/icons-material/Error'
 
 interface AnalysisStatusProps {
   status: AnalysisStatus
@@ -16,26 +20,26 @@ interface AnalysisStatusProps {
 }
 
 export function AnalysisStatus({ status, size = 'md' }: AnalysisStatusProps) {
-  const statusConfig: Record<AnalysisStatus, { bg: string; text: string; icon: string }> = {
+  const statusConfig: Record<AnalysisStatus, { bg: string; text: string; icon: React.ReactNode }> = {
     pending: {
       bg: 'bg-gray-100',
       text: 'text-gray-800',
-      icon: '⏳',
+      icon: <HourglassEmptyIcon sx={{ fontSize: 16 }} />,
     },
     processing: {
       bg: 'bg-blue-100',
       text: 'text-blue-800',
-      icon: '⚙️',
+      icon: <SettingsIcon sx={{ fontSize: 16 }} />,
     },
     completed: {
       bg: 'bg-green-100',
       text: 'text-green-800',
-      icon: '✓',
+      icon: <CheckCircleIcon sx={{ fontSize: 16 }} />,
     },
     error: {
       bg: 'bg-red-100',
       text: 'text-red-800',
-      icon: '✗',
+      icon: <ErrorIcon sx={{ fontSize: 16 }} />,
     },
   }
 

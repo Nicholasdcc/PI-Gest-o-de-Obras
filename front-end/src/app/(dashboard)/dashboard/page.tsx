@@ -11,6 +11,11 @@ import Link from 'next/link'
 import { getDashboardSummary } from '@/lib/api/endpoints'
 import { formatNumber } from '@/utils/formatting'
 import type { DashboardSummary } from '@/lib/api/types'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import ImageSearchIcon from '@mui/icons-material/ImageSearch'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
@@ -65,7 +70,7 @@ export default function DashboardPage() {
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <span className="text-red-600 text-2xl">⚠️</span>
+              <WarningAmberIcon sx={{ fontSize: 32, color: '#dc2626' }} />
             </div>
             <div className="ml-4 flex-1">
               <h3 className="text-red-800 font-semibold mb-2">
@@ -93,7 +98,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-semibold text-gray-600">
                   Total de Projetos
                 </h3>
-                <span className="text-3xl">🏗️</span>
+                <AccountTreeIcon sx={{ fontSize: 40, color: '#001489' }} />
               </div>
               <p className="text-4xl font-bold text-[#001489] mb-2">
                 {formatNumber(summary.total_projects)}
@@ -109,7 +114,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-semibold text-gray-600">
                   Evidências Analisadas
                 </h3>
-                <span className="text-3xl">📸</span>
+                <ImageSearchIcon sx={{ fontSize: 40, color: '#2563eb' }} />
               </div>
               <p className="text-4xl font-bold text-blue-600 mb-2">
                 {formatNumber(summary.total_evidences)}
@@ -125,7 +130,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-semibold text-gray-600">
                   Problemas Detectados
                 </h3>
-                <span className="text-3xl">⚠️</span>
+                <WarningAmberIcon sx={{ fontSize: 40, color: '#ea580c' }} />
               </div>
               <p className="text-4xl font-bold text-orange-600 mb-2">
                 {formatNumber(summary.total_issues)}
@@ -146,9 +151,10 @@ export default function DashboardPage() {
                 href="/projects/new"
                 className="flex items-center p-4 border-2 border-[#001489] rounded-lg hover:bg-[#001489] hover:text-white transition group"
               >
-                <span className="text-3xl mr-4 group-hover:scale-110 transition">
-                  ➕
-                </span>
+                <AddCircleOutlineIcon 
+                  sx={{ fontSize: 40 }} 
+                  className="mr-4 text-[#001489] group-hover:text-white group-hover:scale-110 transition"
+                />
                 <div>
                   <h3 className="font-semibold text-[#001489] group-hover:text-white">
                     Novo Projeto
@@ -163,9 +169,10 @@ export default function DashboardPage() {
                 href="/projects"
                 className="flex items-center p-4 border-2 border-gray-300 rounded-lg hover:border-[#001489] hover:bg-gray-50 transition group"
               >
-                <span className="text-3xl mr-4 group-hover:scale-110 transition">
-                  📋
-                </span>
+                <FolderOpenIcon 
+                  sx={{ fontSize: 40 }} 
+                  className="mr-4 text-gray-600 group-hover:text-[#001489] group-hover:scale-110 transition"
+                />
                 <div>
                   <h3 className="font-semibold text-gray-800">
                     Ver Todos os Projetos

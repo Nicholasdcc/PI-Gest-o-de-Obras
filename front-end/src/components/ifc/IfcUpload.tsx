@@ -7,6 +7,8 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import InfoIcon from '@mui/icons-material/Info'
 
 interface IfcUploadProps {
   onUpload: (file: File) => Promise<void>
@@ -104,7 +106,7 @@ export function IfcUpload({ onUpload, isLoading = false }: IfcUploadProps) {
         <h3 className="text-lg font-bold text-[#001489]">
           Enviar Modelo IFC
         </h3>
-        <span className="text-2xl">📐</span>
+        <AccountTreeIcon sx={{ fontSize: 32, color: '#001489' }} />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -173,9 +175,12 @@ export function IfcUpload({ onUpload, isLoading = false }: IfcUploadProps) {
       </form>
 
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-        <p className="text-xs text-blue-800">
-          ℹ️ O arquivo IFC será processado após o envio. O tempo de processamento
-          depende do tamanho do modelo.
+        <p className="text-xs text-blue-800 flex items-start gap-2">
+          <InfoIcon sx={{ fontSize: 16, mt: 0.2 }} />
+          <span>
+            O arquivo IFC será processado após o envio. O tempo de processamento
+            depende do tamanho do modelo.
+          </span>
         </p>
       </div>
     </div>
