@@ -8,6 +8,7 @@ from typing import Optional, Sequence
 from app.domain.entities import (
     AnalysisStatus,
     BimAnalysis,
+    ComparisonResult,
     ImageAnalysis,
     ProjectAnalysis,
 )
@@ -59,6 +60,11 @@ class AnalyzeProjectUseCase:
                 bim_analysis=bim_result,
                 image_analysis=image_result,
             )
+            analysis.notes = self._compose_summary_message(
+                bim_analysis=bim_result,
+                image_analysis=image_result,
+                comparison=comparison,
+            )
             analysis.mark_completed(bim_result, image_result, comparison)
             analysis = await self._repository.update(analysis)
             return analysis
@@ -82,4 +88,25 @@ class AnalyzeProjectUseCase:
             image_source=payload.image_file_paths[0],
             project_context=payload.context,
         )
+
+    @staticmethod
+    def _compose_summary_message(
+        *,
+        bim_analysis: BimAnalysis,
+        image_analysis: ImageAnalysis,
+        comparison: ComparisonResult,
+    ) -> str:
+        segments: list[str] = []
+
+        if bim_analysis.summary:
+            segments.append(f"BIM: {bim_analysis.summary}")
+
+        if image_analysis.summary:
+            segments.append(f"Imagem: {image_analysis.summary}")
+
+        comparison_summary = getattr(comparison, "summary", None)
+        if comparison_summary:
+            segments.append(f"Comparação: {comparison_summary}")
+
+        return " | ".join(segments)
 

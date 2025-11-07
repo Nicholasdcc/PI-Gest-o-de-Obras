@@ -82,11 +82,16 @@ async def run_analysis(
     summary="Recupera resultado detalhado por ID",
 )
 async def get_analysis(
-    analysis_id: UUID,
+    analysis_id: str,
     repository=Depends(get_repository),
 ):
+    try:
+        analysis_uuid = UUID(analysis_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="`analysis_id` deve ser um UUID válido") from exc
+
     use_case = GetAnalysisUseCase(repository=repository)
-    result = await use_case.execute(GetAnalysisInput(analysis_id=analysis_id))
+    result = await use_case.execute(GetAnalysisInput(analysis_id=analysis_uuid))
     if result is None:
         raise HTTPException(status_code=404, detail="Análise não encontrada")
     return ProjectAnalysisResponse.from_entity(result)
