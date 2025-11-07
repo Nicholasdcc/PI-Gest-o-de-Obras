@@ -144,8 +144,8 @@ export default function LoginPage() {
             <Image
               src="/Metro_SP_Logo.svg"
               alt="Metrô-SP Logo"
-              width={96}
-              height={96}
+              width={256}
+              height={256}
               className="object-contain"
               priority
             />
