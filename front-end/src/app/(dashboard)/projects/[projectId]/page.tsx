@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useProjectDetail } from '@/hooks/useProjects'
 import { formatDate, formatProjectStatus, formatAnalysisStatus } from '@/utils/formatting'
+import { IfcSection } from '@/components/ifc/IfcSection'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -209,6 +210,15 @@ export default function ProjectDetailPage() {
                   </Link>
                 </div>
               )}
+            </div>
+
+            {/* IFC Section */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-8">
+              <h2 className="text-xl font-bold text-[#001489] mb-6 flex items-center gap-2">
+                <span>📐</span>
+                Modelo IFC
+              </h2>
+              <IfcSection projectId={projectId} />
             </div>
 
             {/* Actions */}

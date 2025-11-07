@@ -145,6 +145,38 @@ export interface GenerateReportResponse {
 }
 
 // ============================================================================
+// IFC TYPES
+// ============================================================================
+
+export type IfcStatus = 'processing' | 'ready' | 'error'
+export type IfcSchema = 'IFC4' | 'IFC2x3'
+export type ComparisonSeverity = 'low' | 'medium' | 'high'
+
+export interface IfcModel {
+  id: string
+  project_id: string
+  status: IfcStatus
+  schema: IfcSchema
+  elements_count?: number
+}
+
+export interface IfcElement {
+  id: string
+  name: string
+  category: string
+  code?: string
+}
+
+export interface IfcComparison {
+  id: string
+  type: string
+  description: string
+  severity: ComparisonSeverity
+}
+
+export interface UploadIfcResponse extends IfcModel {}
+
+// ============================================================================
 // ERROR TYPES
 // ============================================================================
 
