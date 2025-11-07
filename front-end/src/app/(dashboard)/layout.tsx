@@ -11,6 +11,10 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { clearAuth, isAuthenticated } from '@/utils/auth'
 import { motion } from 'motion/react'
+import HomeIcon from '@mui/icons-material/Home'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import PersonIcon from '@mui/icons-material/Person'
+import LogoutIcon from '@mui/icons-material/Logout'
 
 export default function DashboardLayout({
   children,
@@ -42,9 +46,9 @@ export default function DashboardLayout({
   }, [pathname, router])
 
   const menuItems = [
-    { name: 'Principal', icon: '🏠', link: '/dashboard' },
-    { name: 'Projetos', icon: '🏗️', link: '/projects' },
-    { name: 'Perfil', icon: '👤', link: '/profile' },
+    { name: 'Principal', icon: HomeIcon, link: '/dashboard' },
+    { name: 'Projetos', icon: AccountTreeIcon, link: '/projects' },
+    { name: 'Perfil', icon: PersonIcon, link: '/profile' },
   ]
 
   const handleLogout = () => {
@@ -102,17 +106,16 @@ export default function DashboardLayout({
             <motion.div
               initial={false}
               animate={{ 
-                opacity: isSidebarExpanded ? 1 : 0,
+                opacity: isSidebarExpanded ? 0.9 : 0,
                 height: isSidebarExpanded ? 'auto' : 0,
                 marginTop: isSidebarExpanded ? 8 : 0
               }}
               transition={{ 
-                duration: 0.35,
-                delay: isSidebarExpanded ? 0.2 : 0,
+                duration: 0.3,
+                delay: isSidebarExpanded ? 0.15 : 0,
                 ease: [0.4, 0.0, 0.2, 1]
               }}
               className="text-xs font-light whitespace-nowrap overflow-hidden"
-              style={{ opacity: 0.9 }}
             >
               Portal de Inspeção
             </motion.div>
@@ -123,6 +126,7 @@ export default function DashboardLayout({
         <nav className="flex-1 py-6">
           {menuItems.map((item, index) => {
             const active = isActive(item.link)
+            const IconComponent = item.icon
             return (
               <Link
                 key={item.name}
@@ -131,23 +135,14 @@ export default function DashboardLayout({
                   active ? 'bg-white/20 border-l-4 border-white' : ''
                 }`}
               >
-                <span className="text-2xl">{item.icon}</span>
-                <motion.span
-                  initial={false}
-                  animate={{
-                    opacity: isSidebarExpanded ? 1 : 0,
-                    width: isSidebarExpanded ? 'auto' : 0,
-                    marginLeft: isSidebarExpanded ? 16 : 0
-                  }}
-                  transition={{
-                    duration: 0.3,
-                    delay: isSidebarExpanded ? 0.1 + (index * 0.05) : 0,
-                    ease: [0.4, 0.0, 0.2, 1]
-                  }}
-                  className="font-medium whitespace-nowrap overflow-hidden"
+                <IconComponent sx={{ fontSize: 28 }} />
+                <span
+                  className={`font-medium whitespace-nowrap overflow-hidden transition-all duration-200 ease-out ${
+                    isSidebarExpanded ? 'opacity-100 max-w-[200px] ml-4' : 'opacity-0 max-w-0 ml-0'
+                  }`}
                 >
                   {item.name}
-                </motion.span>
+                </span>
               </Link>
             )
           })}
@@ -159,23 +154,14 @@ export default function DashboardLayout({
             onClick={handleLogout}
             className="w-full flex items-center px-6 py-4 text-white transition-all duration-300 hover:bg-white/10"
           >
-            <span className="text-2xl">🚪</span>
-            <motion.span
-              initial={false}
-              animate={{
-                opacity: isSidebarExpanded ? 1 : 0,
-                width: isSidebarExpanded ? 'auto' : 0,
-                marginLeft: isSidebarExpanded ? 16 : 0
-              }}
-              transition={{
-                duration: 0.3,
-                delay: isSidebarExpanded ? 0.25 : 0,
-                ease: [0.4, 0.0, 0.2, 1]
-              }}
-              className="font-medium whitespace-nowrap overflow-hidden"
+            <LogoutIcon sx={{ fontSize: 28 }} />
+            <span
+              className={`font-medium whitespace-nowrap overflow-hidden transition-all duration-200 ease-out ${
+                isSidebarExpanded ? 'opacity-100 max-w-[200px] ml-4' : 'opacity-0 max-w-0 ml-0'
+              }`}
             >
               Sair
-            </motion.span>
+            </span>
           </button>
         </div>
       </div>

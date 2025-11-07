@@ -9,6 +9,10 @@
 import React, { useState } from 'react'
 import { PROJECT_CONSTRAINTS } from '@/lib/api/types'
 import type { ProjectFormData, ProjectStatus } from '@/lib/api/types'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import PauseCircleIcon from '@mui/icons-material/PauseCircle'
+import TaskAltIcon from '@mui/icons-material/TaskAlt'
+import ArchiveIcon from '@mui/icons-material/Archive'
 
 interface ProjectFormProps {
   initialData?: Partial<ProjectFormData>
@@ -150,11 +154,31 @@ export function ProjectForm({
           }`}
           disabled={isLoading}
         >
-          <option value="active" className="bg-emerald-50 text-emerald-800 font-semibold">✅ Ativo</option>
-          <option value="paused" className="bg-amber-50 text-amber-800 font-semibold">⏸️ Pausado</option>
-          <option value="completed" className="bg-blue-50 text-blue-800 font-semibold">🏁 Concluído</option>
-          <option value="archived" className="bg-slate-50 text-slate-700 font-semibold">📦 Arquivado</option>
+          <option value="active" className="bg-emerald-50 text-emerald-800 font-semibold">Ativo</option>
+          <option value="paused" className="bg-amber-50 text-amber-800 font-semibold">Pausado</option>
+          <option value="completed" className="bg-blue-50 text-blue-800 font-semibold">Concluído</option>
+          <option value="archived" className="bg-slate-50 text-slate-700 font-semibold">Arquivado</option>
         </select>
+        
+        {/* Status Icons Legend */}
+        <div className="mt-3 flex flex-wrap gap-3 text-xs">
+          <div className="flex items-center gap-1 text-emerald-700">
+            <CheckCircleIcon sx={{ fontSize: 16 }} />
+            <span>Ativo</span>
+          </div>
+          <div className="flex items-center gap-1 text-amber-700">
+            <PauseCircleIcon sx={{ fontSize: 16 }} />
+            <span>Pausado</span>
+          </div>
+          <div className="flex items-center gap-1 text-blue-700">
+            <TaskAltIcon sx={{ fontSize: 16 }} />
+            <span>Concluído</span>
+          </div>
+          <div className="flex items-center gap-1 text-slate-600">
+            <ArchiveIcon sx={{ fontSize: 16 }} />
+            <span>Arquivado</span>
+          </div>
+        </div>
       </div>
 
       {/* Submit Button */}
