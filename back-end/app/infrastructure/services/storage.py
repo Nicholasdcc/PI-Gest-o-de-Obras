@@ -23,7 +23,7 @@ class LocalFileStorage:
         self._base_path.mkdir(parents=True, exist_ok=True)
 
     async def save_upload_file(self, upload: UploadFile, *, subdir: str | None = None) -> str:
-        """Persiste um arquivo individual e retorna o caminho absoluto."""
+        """Persiste um arquivo individual e retorna o caminho relativo."""
 
         target_dir = self._base_path / subdir if subdir else self._base_path
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -36,7 +36,13 @@ class LocalFileStorage:
         except OSError as exc:  # pragma: no cover - erro de IO difícil de reproduzir
             raise FileStorageError("Falha ao armazenar arquivo enviado") from exc
 
-        return str(destination.resolve())
+        # Retornar caminho relativo ao base_path
+        try:
+            relative_path = destination.relative_to(self._base_path)
+            return str(relative_path)
+        except ValueError:
+            # Se não conseguir obter caminho relativo, retornar absoluto
+            return str(destination.resolve())
 
     async def save_upload_files(
         self, uploads: Iterable[UploadFile], *, subdir: str | None = None

@@ -19,14 +19,15 @@ from app.domain.entities import (
 )
 
 
-class IssueSchema(BaseModel):
+class DetectedIssueSchema(BaseModel):
+    """Schema para issues detectados em análises de BIM/imagem."""
     description: str
     severity: IssueSeverity
     confidence: float = Field(ge=0.0, le=1.0)
     location_hint: Optional[str] = None
 
     @classmethod
-    def from_entity(cls, issue: DetectedIssue) -> "IssueSchema":
+    def from_entity(cls, issue: DetectedIssue) -> "DetectedIssueSchema":
         return cls(
             description=issue.description,
             severity=issue.severity,
@@ -39,7 +40,7 @@ class BaseAnalysisSchema(BaseModel):
     id: UUID
     status: AnalysisStatus
     summary: Optional[str]
-    issues: list[IssueSchema]
+    issues: list[DetectedIssueSchema]
     raw_output: Optional[str]
     created_at: datetime
     completed_at: Optional[datetime]
@@ -54,7 +55,7 @@ class BimAnalysisSchema(BaseAnalysisSchema):
             id=entity.id,
             status=entity.status,
             summary=entity.summary,
-            issues=[IssueSchema.from_entity(issue) for issue in entity.issues],
+            issues=[DetectedIssueSchema.from_entity(issue) for issue in entity.issues],
             raw_output=entity.raw_output,
             created_at=entity.created_at,
             completed_at=entity.completed_at,
@@ -71,7 +72,7 @@ class ImageAnalysisSchema(BaseAnalysisSchema):
             id=entity.id,
             status=entity.status,
             summary=entity.summary,
-            issues=[IssueSchema.from_entity(issue) for issue in entity.issues],
+            issues=[DetectedIssueSchema.from_entity(issue) for issue in entity.issues],
             raw_output=entity.raw_output,
             created_at=entity.created_at,
             completed_at=entity.completed_at,
@@ -168,3 +169,132 @@ class ProjectAnalysisListResponse(BaseModel):
         return cls(items=[ProjectAnalysisListItem.from_entity(item) for item in entities])
 
 
+# ============================================================================
+# PROJECT SCHEMAS
+# ============================================================================
+
+class ProjectBase(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    location: str = Field(min_length=1, max_length=500)
+    status: str = Field(default="active")
+
+
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectResponse(ProjectBase):
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+    evidence_count: int = 0
+    issues_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectDetailResponse(ProjectResponse):
+    evidences: list["EvidenceSummarySchema"] = []
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# EVIDENCE SCHEMAS
+# ============================================================================
+
+class EvidenceSummarySchema(BaseModel):
+    id: UUID
+    thumbnail_url: Optional[str] = None
+    status: str
+    issues_count: int = 0
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class EvidenceResponse(BaseModel):
+    id: UUID
+    project_id: UUID
+    file_url: str
+    thumbnail_url: Optional[str] = None
+    description: Optional[str] = None
+    status: str
+    uploaded_at: datetime
+    analyzed_at: Optional[datetime] = None
+    issues_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class EvidenceDetailResponse(EvidenceResponse):
+    issues: list["IssueSchema"] = []
+
+    class Config:
+        from_attributes = True
+
+
+class UploadEvidenceResponse(EvidenceResponse):
+    pass
+
+
+# ============================================================================
+# ISSUE SCHEMAS (for evidences)
+# ============================================================================
+
+class IssueSchema(BaseModel):
+    id: UUID
+    type: str
+    description: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    severity: Optional[str] = None
+    location: Optional[str | dict] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# REPORT SCHEMAS
+# ============================================================================
+
+class ReportResponse(BaseModel):
+    project_id: UUID
+    url: str
+    format: str = "pdf"
+    generated_at: datetime
+    file_size: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class GenerateReportResponse(BaseModel):
+    status: str = "generating"
+
+
+# ============================================================================
+# IFC SCHEMAS
+# ============================================================================
+
+class IfcModelResponse(BaseModel):
+    id: UUID
+    project_id: UUID
+    status: str
+    schema: Optional[str] = None
+    elements_count: Optional[int] = None
+    error_message: Optional[str] = None
+    uploaded_at: datetime
+    processed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UploadIfcResponse(IfcModelResponse):
+    pass

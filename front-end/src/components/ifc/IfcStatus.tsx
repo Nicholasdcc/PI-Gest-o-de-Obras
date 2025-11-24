@@ -66,10 +66,12 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
             <p>
               <span className="font-semibold">Status:</span> {statusInfo.label}
             </p>
-            <p>
-              <span className="font-semibold">Schema:</span> {model.schema}
-            </p>
-            {model.elements_count !== undefined && (
+            {model.schema && (
+              <p>
+                <span className="font-semibold">Schema:</span> {model.schema}
+              </p>
+            )}
+            {model.elements_count !== undefined && model.elements_count !== null && (
               <p>
                 <span className="font-semibold">Elementos:</span>{' '}
                 {model.elements_count.toLocaleString('pt-BR')}
@@ -92,10 +94,21 @@ export function IfcStatus({ model, onReupload }: IfcStatusProps) {
 
       {model.status === 'error' && (
         <div className="mt-4 space-y-3">
-          <p className="text-sm text-red-800">
-            Ocorreu um erro ao processar o modelo IFC. Por favor, verifique se o
-            arquivo está correto e tente fazer o upload novamente.
-          </p>
+          <div className="p-3 bg-white rounded-lg">
+            <p className="text-sm text-red-800 font-semibold mb-2">
+              Ocorreu um erro ao processar o modelo IFC:
+            </p>
+            {model.error_message && (
+              <p className="text-sm text-red-700 bg-red-50 p-2 rounded border border-red-200">
+                {model.error_message}
+              </p>
+            )}
+            {!model.error_message && (
+              <p className="text-sm text-red-700">
+                Por favor, verifique se o arquivo está correto e tente fazer o upload novamente.
+              </p>
+            )}
+          </div>
           {onReupload && (
             <button
               onClick={onReupload}

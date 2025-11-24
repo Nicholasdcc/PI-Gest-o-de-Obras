@@ -158,6 +158,7 @@ export interface IfcModel {
   status: IfcStatus
   schema: IfcSchema
   elements_count?: number
+  error_message?: string
 }
 
 export interface IfcElement {

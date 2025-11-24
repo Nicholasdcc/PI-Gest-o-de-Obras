@@ -17,13 +17,8 @@ from app.infrastructure import (
 from app.infrastructure.db.session import get_session
 
 
-async def get_db_session() -> AsyncSession:
-    async with get_session() as session:
-        yield session
-
-
 def get_repository(
-    session: Annotated[AsyncSession, Depends(get_db_session)]
+    session: Annotated[AsyncSession, Depends(get_session)]
 ) -> SQLAlchemyProjectAnalysisRepository:
     return SQLAlchemyProjectAnalysisRepository(session=session)
 

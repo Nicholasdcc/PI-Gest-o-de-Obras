@@ -20,9 +20,22 @@ SessionFactory = async_sessionmaker(engine, expire_on_commit=False, class_=Async
 
 
 @asynccontextmanager
-async def get_session() -> AsyncIterator[AsyncSession]:
+async def get_session_context() -> AsyncIterator[AsyncSession]:
     """Retorna sessão assíncrona para uso em dependências da API."""
 
     async with SessionFactory() as session:
         yield session
+
+
+async def get_session() -> AsyncIterator[AsyncSession]:
+    """Dependency para obter sessão do banco de dados."""
+    async with SessionFactory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 

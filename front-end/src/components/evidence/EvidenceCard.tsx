@@ -11,6 +11,9 @@ import Link from 'next/link'
 import { formatDateTime, formatAnalysisStatus } from '@/utils/formatting'
 import type { Evidence } from '@/lib/api/types'
 import ImageIcon from '@mui/icons-material/Image'
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
 
 interface EvidenceCardProps {
   evidence: Evidence
@@ -48,13 +51,56 @@ export function EvidenceCard({ evidence, projectId }: EvidenceCardProps) {
 
         {/* Hover Overlay */}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-white p-4">
-          <p className="text-sm font-semibold mb-1">
-            {formatAnalysisStatus(evidence.status)}
-          </p>
-          {evidence.issues_count !== undefined && evidence.issues_count > 0 && (
-            <p className="text-xs">
-              {evidence.issues_count} problema{evidence.issues_count !== 1 ? 's' : ''}
-            </p>
+          {evidence.status === 'error' && (
+            <>
+              <ErrorOutlineIcon sx={{ fontSize: 48, color: '#ef4444', marginBottom: 2 }} />
+              <p className="text-sm font-semibold mb-1 text-red-400">
+                Falha ao analisar imagem
+              </p>
+              <p className="text-xs text-center">
+                Clique para tentar novamente
+              </p>
+            </>
+          )}
+          {evidence.status === 'completed' && (
+            <>
+              <CheckCircleIcon sx={{ fontSize: 48, color: '#22c55e', marginBottom: 2 }} />
+              <p className="text-sm font-semibold mb-1">
+                {formatAnalysisStatus(evidence.status)}
+              </p>
+              {evidence.issues_count !== undefined && evidence.issues_count > 0 && (
+                <p className="text-xs">
+                  {evidence.issues_count} problema{evidence.issues_count !== 1 ? 's' : ''} detectado{evidence.issues_count !== 1 ? 's' : ''}
+                </p>
+              )}
+              {evidence.issues_count === 0 && (
+                <p className="text-xs text-green-400">
+                  Nenhum problema detectado
+                </p>
+              )}
+            </>
+          )}
+          {evidence.status === 'processing' && (
+            <>
+              <HourglassEmptyIcon sx={{ fontSize: 48, marginBottom: 2 }} className="animate-pulse" />
+              <p className="text-sm font-semibold mb-1">
+                Analisando imagem...
+              </p>
+              <p className="text-xs">
+                Aguarde alguns segundos
+              </p>
+            </>
+          )}
+          {evidence.status === 'pending' && (
+            <>
+              <HourglassEmptyIcon sx={{ fontSize: 48, marginBottom: 2, opacity: 0.6 }} />
+              <p className="text-sm font-semibold mb-1">
+                {formatAnalysisStatus(evidence.status)}
+              </p>
+              <p className="text-xs">
+                Clique para ver detalhes
+              </p>
+            </>
           )}
           {evidence.uploaded_at && (
             <p className="text-xs mt-2 opacity-80">

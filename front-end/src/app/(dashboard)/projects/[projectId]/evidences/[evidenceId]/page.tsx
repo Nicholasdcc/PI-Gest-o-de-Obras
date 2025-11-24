@@ -306,17 +306,30 @@ export default function EvidenceDetailPage() {
                   <div className="text-center">
                     <WarningAmberIcon sx={{ fontSize: 64, color: '#dc2626', mb: 1.5 }} />
                     <h3 className="text-red-900 font-semibold mb-2">
-                      Erro na Análise
+                      Falha ao Analisar Imagem
                     </h3>
-                    <p className="text-red-700 text-sm mb-4">
-                      {analysisError || 'Ocorreu um erro ao processar a análise'}
+                    <p className="text-red-700 text-sm mb-1">
+                      {analysisError || 'Não foi possível processar a análise desta imagem.'}
+                    </p>
+                    <p className="text-red-600 text-xs mb-4">
+                      Possíveis causas: imagem corrompida, formato não suportado ou erro no serviço de IA.
                     </p>
                     <button
                       onClick={retryAnalysis}
                       disabled={isTriggering}
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-red-600 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                     >
-                      {isTriggering ? 'Tentando...' : 'Tentar novamente'}
+                      {isTriggering ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Tentando...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshIcon sx={{ fontSize: 18 }} />
+                          Tentar Novamente
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

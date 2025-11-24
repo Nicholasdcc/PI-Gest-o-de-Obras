@@ -116,9 +116,9 @@ export function formatProjectStatus(status: string): string {
 export function formatAnalysisStatus(status: string): string {
   const statusMap: Record<string, string> = {
     pending: 'Pendente',
-    processing: 'Processando',
-    completed: 'Concluído',
-    error: 'Erro',
+    processing: 'Analisando...',
+    completed: 'Analisada',
+    error: 'Falha na análise',
   }
   
   return statusMap[status] || status

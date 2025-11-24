@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
+from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.interfaces.http.dependencies import (
     get_file_storage,
@@ -12,7 +16,22 @@ from app.interfaces.http.dependencies import (
     get_repository,
 )
 from app.infrastructure import FileStorageError
-from app.interfaces.http.schemas import ProjectAnalysisListResponse, ProjectAnalysisResponse
+from app.infrastructure.db.session import get_session
+from app.infrastructure.db.models import ProjectModel, EvidenceModel, IssueModel, IfcModel, IfcElementModel, IfcComparisonModel
+from app.infrastructure.services.ifc_processor import process_ifc_file
+from app.infrastructure.services.evidence_processor import process_evidence_file
+from app.interfaces.http.schemas import (
+    ProjectAnalysisListResponse,
+    ProjectAnalysisResponse,
+    ProjectCreate,
+    ProjectResponse,
+    ProjectDetailResponse,
+    EvidenceResponse,
+    EvidenceDetailResponse,
+    UploadEvidenceResponse,
+    IfcModelResponse,
+    UploadIfcResponse,
+)
 from app.use_cases import (
     AnalyzeProjectInput,
     AnalyzeProjectUseCase,
@@ -22,9 +41,41 @@ from app.use_cases import (
     ListAnalysesInput,
     ListAnalysesUseCase,
 )
+from sqlalchemy import select, func
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
+
+
+def file_path_to_url(file_path: str, base_url: str = "http://localhost:8000") -> str:
+    """
+    Converte um caminho de arquivo relativo para uma URL completa.
+    
+    Args:
+        file_path: Caminho do arquivo (pode ser relativo ou absoluto)
+        base_url: URL base da API
+        
+    Returns:
+        URL completa para acessar o arquivo
+    """
+    from pathlib import Path
+    from app.core.config import get_settings
+    
+    settings = get_settings()
+    
+    # Se for caminho absoluto, extrair apenas a parte relativa ao uploads_path
+    if Path(file_path).is_absolute():
+        try:
+            relative_path = Path(file_path).relative_to(settings.app.uploads_path)
+            return f"{base_url}/uploads/{relative_path}"
+        except ValueError:
+            # Se não conseguir extrair caminho relativo, retornar o original
+            return file_path
+    
+    # Se já for relativo, construir URL
+    return f"{base_url}/uploads/{file_path}"
 
 
 @router.get("/health", summary="Verifica se o serviço está operacional")
@@ -32,6 +83,29 @@ async def healthcheck() -> dict[str, str]:
     """Endpoint simples para monitoramento."""
 
     return {"status": "ok"}
+
+
+@router.get("/dashboard/summary", summary="Obtém resumo do dashboard")
+async def get_dashboard_summary(db: AsyncSession = Depends(get_session)):
+    """Retorna estatísticas gerais do dashboard."""
+    
+    # Contar projetos
+    projects_result = await db.execute(select(func.count(ProjectModel.id)))
+    total_projects = projects_result.scalar() or 0
+    
+    # Contar evidências
+    evidences_result = await db.execute(select(func.count(EvidenceModel.id)))
+    total_evidences = evidences_result.scalar() or 0
+    
+    # Contar issues
+    issues_result = await db.execute(select(func.count(IssueModel.id)))
+    total_issues = issues_result.scalar() or 0
+    
+    return {
+        "total_projects": total_projects,
+        "total_evidences": total_evidences,
+        "total_issues": total_issues,
+    }
 
 
 @router.post(
@@ -109,4 +183,591 @@ async def list_analyses(
     use_case = ListAnalysesUseCase(repository=repository)
     result = await use_case.execute(ListAnalysesInput(limit=limit))
     return ProjectAnalysisListResponse.from_entities(result)
+
+
+# ============================================================================
+# PROJECT ENDPOINTS
+# ============================================================================
+
+@router.get("/projects", response_model=list[ProjectResponse], summary="Lista todos os projetos")
+async def get_projects(db: AsyncSession = Depends(get_session)):
+    """Lista todos os projetos com contadores de evidências e issues."""
+    result = await db.execute(
+        select(
+            ProjectModel,
+            func.count(EvidenceModel.id.distinct()).label("evidence_count"),
+            func.count(IssueModel.id.distinct()).label("issues_count"),
+        )
+        .outerjoin(EvidenceModel, ProjectModel.id == EvidenceModel.project_id)
+        .outerjoin(IssueModel, EvidenceModel.id == IssueModel.evidence_id)
+        .group_by(ProjectModel.id)
+    )
+    
+    projects = []
+    for row in result:
+        project = row[0]
+        project_dict = {
+            "id": project.id,
+            "name": project.name,
+            "location": project.location,
+            "status": project.status,
+            "created_at": project.created_at,
+            "updated_at": project.updated_at,
+            "evidence_count": row[1] or 0,
+            "issues_count": row[2] or 0,
+        }
+        projects.append(ProjectResponse(**project_dict))
+    
+    return projects
+
+
+@router.get("/projects/{project_id}", response_model=ProjectDetailResponse, summary="Obtém projeto por ID")
+async def get_project(project_id: str, db: AsyncSession = Depends(get_session)):
+    """Obtém detalhes de um projeto específico."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    result = await db.execute(
+        select(ProjectModel).where(ProjectModel.id == project_uuid)
+    )
+    project = result.scalar_one_or_none()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    
+    # Contar evidências e issues
+    evidence_result = await db.execute(
+        select(func.count(EvidenceModel.id)).where(EvidenceModel.project_id == project_uuid)
+    )
+    evidence_count = evidence_result.scalar() or 0
+    
+    issues_result = await db.execute(
+        select(func.count(IssueModel.id))
+        .join(EvidenceModel, IssueModel.evidence_id == EvidenceModel.id)
+        .where(EvidenceModel.project_id == project_uuid)
+    )
+    issues_count = issues_result.scalar() or 0
+    
+    # Buscar evidências com contadores
+    evidences_result = await db.execute(
+        select(
+            EvidenceModel,
+            func.count(IssueModel.id).label("issues_count")
+        )
+        .outerjoin(IssueModel, EvidenceModel.id == IssueModel.evidence_id)
+        .where(EvidenceModel.project_id == project_uuid)
+        .group_by(EvidenceModel.id)
+    )
+    
+    evidence_summaries = []
+    for row in evidences_result:
+        evidence = row[0]
+        evidence_summaries.append({
+            "id": evidence.id,
+            "thumbnail_url": file_path_to_url(evidence.thumbnail_url) if evidence.thumbnail_url else None,
+            "status": evidence.status,
+            "issues_count": row[1] or 0,
+            "uploaded_at": evidence.uploaded_at,
+        })
+    
+    return ProjectDetailResponse(
+        id=project.id,
+        name=project.name,
+        location=project.location,
+        status=project.status,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        evidence_count=evidence_count,
+        issues_count=issues_count,
+        evidences=evidence_summaries,
+    )
+
+
+@router.post("/projects", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, summary="Cria novo projeto")
+async def create_project(project: ProjectCreate, db: AsyncSession = Depends(get_session)):
+    """Cria um novo projeto."""
+    new_project = ProjectModel(
+        name=project.name,
+        location=project.location,
+        status=project.status,
+    )
+    
+    db.add(new_project)
+    await db.commit()
+    await db.refresh(new_project)
+    
+    return ProjectResponse(
+        id=new_project.id,
+        name=new_project.name,
+        location=new_project.location,
+        status=new_project.status,
+        created_at=new_project.created_at,
+        updated_at=new_project.updated_at,
+        evidence_count=0,
+        issues_count=0,
+    )
+
+
+# ============================================================================
+# EVIDENCE ENDPOINTS
+# ============================================================================
+
+@router.get("/projects/{project_id}/evidences", response_model=list[EvidenceResponse], summary="Lista evidências do projeto")
+async def get_project_evidences(project_id: str, db: AsyncSession = Depends(get_session)):
+    """Lista todas as evidências de um projeto."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    # Verificar se projeto existe
+    project_result = await db.execute(
+        select(ProjectModel).where(ProjectModel.id == project_uuid)
+    )
+    if not project_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    
+    # Buscar evidências com contadores
+    result = await db.execute(
+        select(
+            EvidenceModel,
+            func.count(IssueModel.id).label("issues_count")
+        )
+        .outerjoin(IssueModel, EvidenceModel.id == IssueModel.evidence_id)
+        .where(EvidenceModel.project_id == project_uuid)
+        .group_by(EvidenceModel.id)
+    )
+    
+    evidences = []
+    for row in result:
+        evidence = row[0]
+        evidences.append(EvidenceResponse(
+            id=evidence.id,
+            project_id=evidence.project_id,
+            file_url=file_path_to_url(evidence.file_url),
+            thumbnail_url=file_path_to_url(evidence.thumbnail_url) if evidence.thumbnail_url else None,
+            description=evidence.description,
+            status=evidence.status,
+            uploaded_at=evidence.uploaded_at,
+            analyzed_at=evidence.analyzed_at,
+            issues_count=row[1] or 0,
+        ))
+    
+    return evidences
+
+
+@router.post("/projects/{project_id}/evidences", response_model=UploadEvidenceResponse, status_code=status.HTTP_201_CREATED, summary="Faz upload de evidência")
+async def upload_evidence(
+    project_id: str,
+    file: UploadFile = File(...),
+    description: str | None = Form(default=None),
+    db: AsyncSession = Depends(get_session),
+    storage=Depends(get_file_storage),
+    ai_service=Depends(get_openai_service),
+):
+    """Faz upload de uma evidência (imagem) para um projeto e inicia análise automática."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    # Verificar se projeto existe
+    project_result = await db.execute(
+        select(ProjectModel).where(ProjectModel.id == project_uuid)
+    )
+    if not project_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    
+    # Salvar arquivo
+    evidence_id = str(uuid4())
+    try:
+        file_path = await storage.save_upload_file(file, subdir=f"{project_id}/evidences")
+    except FileStorageError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    
+    # Criar evidência no banco
+    new_evidence = EvidenceModel(
+        id=UUID(evidence_id),
+        project_id=project_uuid,
+        file_url=file_path,
+        description=description,
+        status="pending",
+    )
+    
+    db.add(new_evidence)
+    await db.commit()
+    await db.refresh(new_evidence)
+    
+    # Iniciar análise automática em background
+    logger.info(f"🚀 Iniciando análise automática da evidência {evidence_id}")
+    asyncio.create_task(
+        process_evidence_file(UUID(evidence_id), file_path, ai_service)
+    )
+    
+    return UploadEvidenceResponse(
+        id=new_evidence.id,
+        project_id=new_evidence.project_id,
+        file_url=file_path_to_url(new_evidence.file_url),
+        thumbnail_url=file_path_to_url(new_evidence.thumbnail_url) if new_evidence.thumbnail_url else None,
+        description=new_evidence.description,
+        status=new_evidence.status,
+        uploaded_at=new_evidence.uploaded_at,
+        analyzed_at=new_evidence.analyzed_at,
+        issues_count=0,
+    )
+
+
+@router.get("/evidences/{evidence_id}", response_model=EvidenceDetailResponse, summary="Obtém evidência por ID")
+async def get_evidence(evidence_id: str, db: AsyncSession = Depends(get_session)):
+    """Obtém detalhes de uma evidência específica com seus issues."""
+    try:
+        evidence_uuid = UUID(evidence_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID da evidência deve ser um UUID válido") from exc
+    
+    result = await db.execute(
+        select(EvidenceModel).where(EvidenceModel.id == evidence_uuid)
+    )
+    evidence = result.scalar_one_or_none()
+    
+    if not evidence:
+        raise HTTPException(status_code=404, detail="Evidência não encontrada")
+    
+    # Buscar issues
+    issues_result = await db.execute(
+        select(IssueModel).where(IssueModel.evidence_id == evidence_uuid)
+    )
+    issues = issues_result.scalars().all()
+    
+    return EvidenceDetailResponse(
+        id=evidence.id,
+        project_id=evidence.project_id,
+        file_url=file_path_to_url(evidence.file_url),
+        thumbnail_url=file_path_to_url(evidence.thumbnail_url) if evidence.thumbnail_url else None,
+        description=evidence.description,
+        status=evidence.status,
+        uploaded_at=evidence.uploaded_at,
+        analyzed_at=evidence.analyzed_at,
+        issues_count=len(issues),
+        issues=[
+            {
+                "id": issue.id,
+                "type": issue.type,
+                "description": issue.description,
+                "confidence": issue.confidence,
+                "severity": issue.severity,
+                "location": issue.location,
+                "created_at": issue.created_at,
+            }
+            for issue in issues
+        ],
+    )
+
+
+@router.post("/evidences/{evidence_id}/analyze", summary="Inicia análise de evidência")
+async def analyze_evidence(
+    evidence_id: str, 
+    db: AsyncSession = Depends(get_session),
+    ai_service = Depends(get_openai_service)
+):
+    """Inicia a análise de uma evidência usando OpenAI Vision."""
+    try:
+        evidence_uuid = UUID(evidence_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID da evidência deve ser um UUID válido") from exc
+    
+    result = await db.execute(
+        select(EvidenceModel).where(EvidenceModel.id == evidence_uuid)
+    )
+    evidence = result.scalar_one_or_none()
+    
+    if not evidence:
+        raise HTTPException(status_code=404, detail="Evidência não encontrada")
+    
+    # Permitir re-análise se já foi analisada ou se está travada em processing
+    if evidence.status == "analyzed":
+        logger.info(f"🔄 Re-análise solicitada para evidência {evidence_id}")
+        evidence.status = "pending"
+        await db.commit()
+    elif evidence.status == "processing":
+        # Se está em processing há mais de 5 minutos, permitir restart
+        time_in_processing = datetime.utcnow() - evidence.uploaded_at
+        if time_in_processing < timedelta(minutes=5):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Evidência já está sendo processada há {int(time_in_processing.total_seconds())}s. Aguarde alguns minutos."
+            )
+        logger.warning(f"⚠️  Evidência {evidence_id} travada em processing. Reiniciando análise...")
+        evidence.status = "pending"
+        await db.commit()
+    
+    # Processar em background
+    logger.info(f"🚀 Iniciando análise em background da evidência {evidence_id}")
+    asyncio.create_task(
+        process_evidence_file(evidence_uuid, evidence.file_url, ai_service)
+    )
+    
+    return {
+        "status": "processing",
+        "message": "Análise iniciada. Acompanhe o status da evidência para ver o resultado."
+    }
+
+
+# ============================================================================
+# IFC ENDPOINTS
+# ============================================================================
+
+@router.get("/projects/{project_id}/ifc", response_model=IfcModelResponse, summary="Obtém modelo IFC do projeto")
+async def get_project_ifc(project_id: str, db: AsyncSession = Depends(get_session)):
+    """Obtém o modelo IFC de um projeto."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    # Buscar modelo IFC
+    result = await db.execute(
+        select(IfcModel).where(IfcModel.project_id == project_uuid)
+    )
+    ifc_model = result.scalar_one_or_none()
+    
+    if not ifc_model:
+        raise HTTPException(status_code=404, detail="Modelo IFC não encontrado")
+    
+    return IfcModelResponse(
+        id=ifc_model.id,
+        project_id=ifc_model.project_id,
+        status=ifc_model.status,
+        schema=ifc_model.schema,
+        elements_count=ifc_model.elements_count,
+        uploaded_at=ifc_model.uploaded_at,
+        processed_at=ifc_model.processed_at,
+    )
+
+
+@router.post("/projects/{project_id}/ifc", response_model=UploadIfcResponse, status_code=status.HTTP_201_CREATED, summary="Faz upload de arquivo IFC")
+async def upload_ifc(
+    project_id: str,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_session),
+    storage=Depends(get_file_storage),
+):
+    """Faz upload de um arquivo IFC para um projeto."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    # Verificar se projeto existe
+    project_result = await db.execute(
+        select(ProjectModel).where(ProjectModel.id == project_uuid)
+    )
+    if not project_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    
+    # Verificar se já existe um IFC para este projeto
+    existing_result = await db.execute(
+        select(IfcModel).where(IfcModel.project_id == project_uuid)
+    )
+    existing_ifc = existing_result.scalar_one_or_none()
+    if existing_ifc:
+        # Deletar o IFC existente (cascade vai deletar elementos e comparações)
+        await db.delete(existing_ifc)
+        await db.flush()
+        logger.info(f"IFC existente {existing_ifc.id} removido para substituição")
+    
+    # Validar extensão do arquivo
+    if not file.filename or not file.filename.lower().endswith('.ifc'):
+        raise HTTPException(status_code=422, detail="Arquivo deve ser um IFC")
+    
+    # Salvar arquivo
+    try:
+        file_path = await storage.save_upload_file(file, subdir=f"{project_id}/ifc")
+    except FileStorageError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    
+    # Criar registro no banco
+    new_ifc = IfcModel(
+        project_id=project_uuid,
+        file_url=file_path,
+        status="processing",
+    )
+    
+    db.add(new_ifc)
+    await db.commit()
+    await db.refresh(new_ifc)
+    
+    # Processar IFC em background (simplificado)
+    # Em produção, isso deveria ser uma tarefa assíncrona (Celery, RQ, etc)
+    import asyncio
+    asyncio.create_task(process_ifc_background(new_ifc.id, file_path, db))
+    
+    return UploadIfcResponse(
+        id=new_ifc.id,
+        project_id=new_ifc.project_id,
+        status=new_ifc.status,
+        schema=new_ifc.schema,
+        elements_count=new_ifc.elements_count,
+        uploaded_at=new_ifc.uploaded_at,
+        processed_at=new_ifc.processed_at,
+    )
+
+
+async def process_ifc_background(ifc_id: UUID, file_path: str, db: AsyncSession):
+    """Processa o IFC em background usando ifcopenshell e OpenAI."""
+    try:
+        await asyncio.sleep(1)  # Pequeno delay para garantir commit
+        
+        # Processar arquivo IFC
+        from app.infrastructure.db.session import SessionFactory
+        async with SessionFactory() as session:
+            # Opcionalmente usar AI service
+            # ai_service = get_openai_service()
+            await process_ifc_file(ifc_id, file_path, session, ai_service=None)
+            
+    except Exception as e:
+        logger.error(f"Erro ao processar IFC {ifc_id}: {e}")
+
+
+@router.get("/ifc/{ifc_id}/elements", summary="Lista elementos do modelo IFC")
+async def get_ifc_elements(ifc_id: str, db: AsyncSession = Depends(get_session)):
+    """Lista os elementos de um modelo IFC."""
+    try:
+        ifc_uuid = UUID(ifc_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do IFC deve ser um UUID válido") from exc
+    
+    # Verificar se IFC existe
+    result = await db.execute(
+        select(IfcModel).where(IfcModel.id == ifc_uuid)
+    )
+    ifc_model = result.scalar_one_or_none()
+    
+    if not ifc_model:
+        raise HTTPException(status_code=404, detail="Modelo IFC não encontrado")
+    
+    if ifc_model.status != "ready":
+        raise HTTPException(status_code=400, detail="Modelo IFC ainda não está pronto")
+    
+    # TODO: Implementar leitura real dos elementos do arquivo IFC
+    # Por enquanto, retornar elementos mockados
+    mock_elements = [
+        {"id": "1a2b3c", "name": "Parede Externa Norte", "category": "IfcWall", "code": "W-001"},
+        {"id": "2b3c4d", "name": "Laje Piso Térreo", "category": "IfcSlab", "code": "S-001"},
+        {"id": "3c4d5e", "name": "Viga Estrutural V1", "category": "IfcBeam", "code": "B-001"},
+        {"id": "4d5e6f", "name": "Coluna C1", "category": "IfcColumn", "code": "C-001"},
+        {"id": "5e6f7g", "name": "Porta Principal", "category": "IfcDoor", "code": "D-001"},
+    ]
+    
+    return mock_elements
+
+
+@router.get("/ifc/{ifc_id}/comparisons", summary="Lista comparações do modelo IFC")
+async def get_ifc_comparisons(ifc_id: str, db: AsyncSession = Depends(get_session)):
+    """Lista as comparações realizadas em um modelo IFC."""
+    try:
+        ifc_uuid = UUID(ifc_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do IFC deve ser um UUID válido") from exc
+    
+    # Verificar se IFC existe
+    result = await db.execute(
+        select(IfcModel).where(IfcModel.id == ifc_uuid)
+    )
+    ifc_model = result.scalar_one_or_none()
+    
+    if not ifc_model:
+        raise HTTPException(status_code=404, detail="Modelo IFC não encontrado")
+    
+    # TODO: Implementar comparações reais
+    # Por enquanto, retornar comparações mockadas
+    mock_comparisons = [
+        {
+            "id": "comp-1",
+            "type": "dimensional",
+            "description": "Espessura da parede W-001 está 5cm menor que o especificado",
+            "severity": "medium"
+        },
+        {
+            "id": "comp-2",
+            "type": "material",
+            "description": "Material da laje S-001 não corresponde ao projeto",
+            "severity": "high"
+        },
+    ]
+    
+    return mock_comparisons
+
+
+@router.get("/projects/{project_id}/ifc/elements", summary="Lista elementos do IFC por projeto")
+async def get_project_ifc_elements(project_id: str, db: AsyncSession = Depends(get_session)):
+    """Lista os elementos do IFC de um projeto."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    # Buscar IFC do projeto
+    result = await db.execute(
+        select(IfcModel).where(IfcModel.project_id == project_uuid)
+    )
+    ifc_model = result.scalar_one_or_none()
+    
+    if not ifc_model:
+        raise HTTPException(status_code=404, detail="Projeto não possui modelo IFC")
+    
+    if ifc_model.status != "ready":
+        raise HTTPException(status_code=400, detail="Modelo IFC ainda não está pronto")
+    
+    # Buscar elementos do banco
+    elements_result = await db.execute(
+        select(IfcElementModel).where(IfcElementModel.ifc_model_id == ifc_model.id)
+    )
+    elements = elements_result.scalars().all()
+    
+    return [
+        {
+            "id": elem.ifc_id,
+            "name": elem.name,
+            "category": elem.category,
+            "code": elem.code
+        }
+        for elem in elements
+    ]
+
+
+@router.get("/projects/{project_id}/ifc/comparisons", summary="Lista comparações do IFC por projeto")
+async def get_project_ifc_comparisons(project_id: str, db: AsyncSession = Depends(get_session)):
+    """Lista as comparações do IFC de um projeto."""
+    try:
+        project_uuid = UUID(project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="ID do projeto deve ser um UUID válido") from exc
+    
+    # Buscar IFC do projeto
+    result = await db.execute(
+        select(IfcModel).where(IfcModel.project_id == project_uuid)
+    )
+    ifc_model = result.scalar_one_or_none()
+    
+    if not ifc_model:
+        raise HTTPException(status_code=404, detail="Projeto não possui modelo IFC")
+    
+    # Buscar comparações do banco
+    comparisons_result = await db.execute(
+        select(IfcComparisonModel).where(IfcComparisonModel.ifc_model_id == ifc_model.id)
+    )
+    comparisons = comparisons_result.scalars().all()
+    
+    return [
+        {
+            "id": str(comp.id),
+            "type": comp.type,
+            "description": comp.description,
+            "severity": comp.severity
+        }
+        for comp in comparisons
+    ]
 

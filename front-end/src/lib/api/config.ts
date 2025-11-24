@@ -26,13 +26,13 @@ export const API_CONFIG = {
    * Base URL for the API
    * Defaults to localhost if not set in environment
    */
-  baseURL: getEnvVar('NEXT_PUBLIC_API_BASE_URL', 'http://localhost:3001/api'),
+  baseURL: getEnvVar('NEXT_PUBLIC_API_BASE_URL', 'http://localhost:8000/api/v1'),
   
   /**
    * Whether to use mock data instead of real API calls
    * Useful for development when backend is not available
    */
-  useMock: getEnvBool('NEXT_PUBLIC_USE_MOCK_API', true),
+  useMock: getEnvBool('NEXT_PUBLIC_USE_MOCK_API', false),
   
   /**
    * Request timeout in milliseconds
