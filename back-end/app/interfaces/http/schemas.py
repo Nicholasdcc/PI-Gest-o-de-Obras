@@ -252,7 +252,7 @@ class IssueSchema(BaseModel):
     description: str
     confidence: float = Field(ge=0.0, le=1.0)
     severity: Optional[str] = None
-    location: Optional[str | dict] = None
+    location: Optional[dict | str] = None
     created_at: datetime
 
     class Config:

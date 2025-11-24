@@ -42,9 +42,9 @@ class OpenAISettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
 
     api_key: str = Field(default="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")
-    model_bim: str = Field(default="gpt-4.1")
-    model_image: str = Field(default="gpt-4.1-mini")
-    model_comparison: str = Field(default="gpt-4.1-mini")
+    model_bim: str = Field(default="gpt-4o-mini")
+    model_image: str = Field(default="gpt-4o-mini")
+    model_comparison: str = Field(default="gpt-4o-mini")
     timeout: int = Field(default=60)
 
 

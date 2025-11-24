@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
 
 from app.interfaces.http.dependencies import (
     get_file_storage,
@@ -76,6 +77,32 @@ def file_path_to_url(file_path: str, base_url: str = "http://localhost:8000") ->
     
     # Se já for relativo, construir URL
     return f"{base_url}/uploads/{file_path}"
+
+
+# ============================================================================
+# AUTH ENDPOINTS (MOCK)
+# ============================================================================
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+@router.post("/auth/login", summary="Login mockado")
+async def login(credentials: LoginRequest):
+    """Login mockado - sempre aceita admin@example.com com senha 12345678."""
+    
+    if credentials.email == "admin@example.com" and credentials.password == "12345678":
+        return {
+            "access_token": "mock_token_admin",
+            "token_type": "bearer",
+            "user": {
+                "id": "admin-user-id",
+                "email": "admin@example.com",
+                "name": "Administrator"
+            }
+        }
+    
+    raise HTTPException(status_code=401, detail="Email ou senha inválidos")
 
 
 @router.get("/health", summary="Verifica se o serviço está operacional")
@@ -770,4 +797,159 @@ async def get_project_ifc_comparisons(project_id: str, db: AsyncSession = Depend
         }
         for comp in comparisons
     ]
+
+
+# ============================================================================
+# REPORTS
+# ============================================================================
+
+@router.post("/projects/{project_id}/reports/generate", summary="Gera relatório do projeto")
+async def generate_report(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_session)
+):
+    """Gera um relatório consolidado do projeto com evidências e IFC."""
+    
+    # Busca o projeto
+    result = await db.execute(
+        select(ProjectModel).where(ProjectModel.id == project_id)
+    )
+    project = result.scalar_one_or_none()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    
+    # Busca evidências com issues
+    result = await db.execute(
+        select(EvidenceModel).where(EvidenceModel.project_id == project_id)
+    )
+    evidences = result.scalars().all()
+    
+    # Busca IFC models
+    result = await db.execute(
+        select(IfcModel).where(IfcModel.project_id == project_id)
+    )
+    ifc_models = result.scalars().all()
+    
+    # Busca todos os issues
+    result = await db.execute(
+        select(IssueModel).where(IssueModel.evidence_id.in_([e.id for e in evidences]))
+    )
+    issues = result.scalars().all()
+    
+    # Conta estatísticas
+    total_evidences = len(evidences)
+    total_issues = len(issues)
+    critical_issues = sum(1 for i in issues if i.severity == "critical")
+    high_issues = sum(1 for i in issues if i.severity == "high")
+    
+    report = {
+        "id": str(uuid4()),
+        "project_id": str(project_id),
+        "project_name": project.name,
+        "generated_at": datetime.utcnow().isoformat(),
+        "summary": {
+            "total_evidences": total_evidences,
+            "total_issues": total_issues,
+            "critical_issues": critical_issues,
+            "high_issues": high_issues,
+            "ifc_models_count": len(ifc_models)
+        },
+        "evidences": [
+            {
+                "id": str(e.id),
+                "file_url": e.file_url,
+                "uploaded_at": e.uploaded_at.isoformat() if e.uploaded_at else None,
+                "status": e.status,
+                "issues_count": sum(1 for i in issues if i.evidence_id == e.id)
+            }
+            for e in evidences
+        ],
+        "issues": [
+            {
+                "id": str(i.id),
+                "type": i.type,
+                "description": i.description,
+                "severity": i.severity,
+                "confidence": i.confidence,
+                "location": i.location
+            }
+            for i in issues
+        ],
+        "ifc_models": [
+            {
+                "id": str(ifc.id),
+                "file_url": ifc.file_url,
+                "schema": ifc.schema,
+                "status": ifc.status,
+                "elements_count": ifc.elements_count
+            }
+            for ifc in ifc_models
+        ]
+    }
+    
+    return report
+
+
+@router.get("/projects/{project_id}/reports/latest", summary="Obtém último relatório do projeto")
+async def get_latest_report(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_session)
+):
+    """Retorna o último relatório gerado (ou gera um novo)."""
+    from pathlib import Path
+    
+    # Gera um novo relatório
+    report = await generate_report(project_id, db)
+    
+    # Define caminho do PDF
+    reports_dir = Path("storage/reports")
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    pdf_filename = f"relatorio-{project_id}.pdf"
+    pdf_path = reports_dir / pdf_filename
+    
+    # Gera o PDF
+    from app.infrastructure.services.pdf_generator import generate_project_report_pdf
+    generate_project_report_pdf(report, pdf_path)
+    
+    # Adiciona URL para download e visualização
+    report["url"] = f"http://localhost:8000/reports/{pdf_filename}"
+    report["download_url"] = f"/api/v1/projects/{project_id}/reports/download"
+    report["format"] = "pdf"
+    report["file_size"] = pdf_path.stat().st_size
+    
+    return report
+
+
+@router.get("/projects/{project_id}/reports/download", summary="Download do relatório em PDF")
+async def download_report(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_session)
+):
+    """Gera e retorna o relatório em PDF para download."""
+    from pathlib import Path
+    from fastapi.responses import FileResponse
+    from app.infrastructure.services.pdf_generator import generate_project_report_pdf
+    
+    # Gera dados do relatório
+    report = await generate_report(project_id, db)
+    
+    # Define caminho do PDF
+    reports_dir = Path("storage/reports")
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    pdf_filename = f"relatorio-{project_id}.pdf"
+    pdf_path = reports_dir / pdf_filename
+    
+    # Gera o PDF
+    generate_project_report_pdf(report, pdf_path)
+    
+    # Retorna o arquivo PDF
+    return FileResponse(
+        path=str(pdf_path),
+        media_type="application/pdf",
+        filename=pdf_filename,
+        headers={
+            "Content-Disposition": f"attachment; filename={pdf_filename}"
+        }
+    )
 

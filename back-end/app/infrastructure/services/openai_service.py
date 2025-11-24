@@ -52,15 +52,17 @@ class OpenAIService:
             if api_key:
                 try:
                     self._client = AsyncOpenAI(api_key=api_key, timeout=self._settings.openai.timeout)
+                    logger.info("✅ Cliente OpenAI inicializado com sucesso! Modelo imagem: %s", self._settings.openai.model_image)
                 except Exception as exc:  # pragma: no cover - erro de inicialização
-                    logger.warning("Falha ao inicializar cliente OpenAI, usando fallback mock. Detalhe: %s", exc)
+                    logger.error("❌ Falha ao inicializar cliente OpenAI, usando fallback mock. Detalhe: %s", exc)
                     self._use_mock = True
             else:
-                logger.warning("Chave OpenAI ausente. Serviço usará respostas mockadas.")
+                logger.warning("⚠️ Chave OpenAI ausente. Serviço usará respostas mockadas.")
                 self._use_mock = True
 
         if self._client is None:
             self._use_mock = True
+            logger.warning("⚠️ MODO MOCK ATIVO - Cliente OpenAI não disponível")
 
     async def analyze_bim(
         self, *, bim_source: str, project_context: str | None = None
@@ -87,17 +89,20 @@ class OpenAIService:
         """Executa prompt para análise de imagem."""
 
         if self._use_mock:
+            logger.warning("🎭 Usando análise MOCK para imagem: %s", image_source)
             return self._mock_image_analysis(source_uri=image_source)
 
+        logger.info("🤖 Enviando imagem para OpenAI (modelo: %s): %s", self._settings.openai.model_image, image_source)
         try:
             payload = await self._ask_openai(
                 model=self._settings.openai.model_image,
                 user_prompt=self._image_prompt(source=image_source, context=project_context),
             )
+            logger.info("✅ Resposta recebida da OpenAI com sucesso!")
             parsed = ImageAnalysisPayload.model_validate_json(payload)
             return self._to_image_entity(parsed, source_uri=image_source)
         except OpenAIServiceError as exc:
-            logger.warning("OpenAI indisponível para análise de imagem. Utilizando fallback mock. Detalhe: %s", exc)
+            logger.error("❌ OpenAI indisponível para análise de imagem. Utilizando fallback mock. Detalhe: %s", exc)
             return self._mock_image_analysis(source_uri=image_source)
 
     async def compare_results(

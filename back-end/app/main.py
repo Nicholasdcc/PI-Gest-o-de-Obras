@@ -30,6 +30,16 @@ def create_app() -> FastAPI:
         name="uploads"
     )
     
+    # Servir relatórios PDF
+    from pathlib import Path
+    reports_dir = Path("storage/reports")
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        "/reports",
+        StaticFiles(directory=str(reports_dir)),
+        name="reports"
+    )
+    
     app.include_router(api_router, prefix=settings.app.api_v1_prefix)
     return app
 
