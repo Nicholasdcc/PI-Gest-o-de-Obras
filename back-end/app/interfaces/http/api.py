@@ -427,11 +427,8 @@ async def upload_evidence(
     await db.commit()
     await db.refresh(new_evidence)
     
-    # Iniciar análise automática em background
-    logger.info(f"🚀 Iniciando análise automática da evidência {evidence_id}")
-    asyncio.create_task(
-        process_evidence_file(UUID(evidence_id), file_path, ai_service)
-    )
+    # NÃO iniciar análise automática - usuário deve clicar no botão
+    logger.info(f"📷 Evidência {evidence_id} salva. Aguardando comando para análise.")
     
     return UploadEvidenceResponse(
         id=new_evidence.id,

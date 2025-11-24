@@ -82,7 +82,7 @@ export function ProjectForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Project Name */}
       <div>
-        <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="name" className="block text-sm font-semibold text-gray-800 mb-2">
           Nome do Projeto *
         </label>
         <input
@@ -90,7 +90,7 @@ export function ProjectForm({
           id="name"
           value={formData.name}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition placeholder:text-gray-500 ${
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition placeholder:text-gray-400 text-gray-900 ${
             errors.name
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:ring-[#001489]'
@@ -102,21 +102,21 @@ export function ProjectForm({
         {errors.name && (
           <p className="text-red-600 text-sm mt-1">{errors.name}</p>
         )}
-        <p className="text-gray-500 text-xs mt-1">
+        <p className="text-gray-600 text-xs mt-1">
           {formData.name.length}/{PROJECT_CONSTRAINTS.NAME_MAX_LENGTH} caracteres
         </p>
       </div>
 
       {/* Location */}
       <div>
-        <label htmlFor="location" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="location" className="block text-sm font-semibold text-gray-800 mb-2">
           Localização *
         </label>
         <textarea
           id="location"
           value={formData.location}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('location', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none placeholder:text-gray-500 ${
+          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none placeholder:text-gray-400 text-gray-900 ${
             errors.location
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:ring-[#001489]'
@@ -129,14 +129,14 @@ export function ProjectForm({
         {errors.location && (
           <p className="text-red-600 text-sm mt-1">{errors.location}</p>
         )}
-        <p className="text-gray-500 text-xs mt-1">
+        <p className="text-gray-600 text-xs mt-1">
           {formData.location.length}/{PROJECT_CONSTRAINTS.LOCATION_MAX_LENGTH} caracteres
         </p>
       </div>
 
       {/* Status */}
       <div>
-        <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="status" className="block text-sm font-semibold text-gray-800 mb-2">
           Status
         </label>
         <select

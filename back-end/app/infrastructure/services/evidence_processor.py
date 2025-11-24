@@ -123,45 +123,6 @@ async def _process_evidence_with_session(
         logger.info(f"   - Status: completed")
         logger.info(f"   - Issues criadas: {issues_created}")
         
-    except ValueError as ve:
-        # Erros de validação
-        error_message = str(ve)
-        logger.error(f"❌ Erro de validação ao processar evidência {evidence_id}: {error_message}")
-        result = await db.execute(
-            select(EvidenceModel).where(EvidenceModel.id == evidence_id)
-        )
-        evidence = result.scalar_one_or_none()
-        if evidence:
-            evidence.status = "error"
-            await db.commit()
-        
-    except Exception as e:
-        logger.error(f"❌ Erro ao processar evidência {evidence_id}: {e}")
-        logger.exception(e)
-        
-        # Marcar como erro
-        result = await db.execute(
-            select(EvidenceModel).where(EvidenceModel.id == evidence_id)
-        )
-        evidence = result.scalar_one_or_none()
-        if evidence:
-            evidence.status = "error"
-            await db.commit()
-
-        
-    except ValueError as ve:
-        # Erros de validação
-        error_message = str(ve)
-        logger.error(f"❌ Erro de validação ao processar evidência {evidence_id}: {error_message}")
-        
-        result = await db.execute(
-            select(EvidenceModel).where(EvidenceModel.id == evidence_id)
-        )
-        evidence = result.scalar_one_or_none()
-        if evidence:
-            evidence.status = "error"
-            await db.commit()
-        
     except Exception as e:
         logger.error(f"❌ Erro ao processar evidência {evidence_id}: {e}")
         logger.exception(e)

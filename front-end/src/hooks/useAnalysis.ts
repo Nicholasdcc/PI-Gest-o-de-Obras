@@ -25,6 +25,7 @@ export function useAnalysis({
   const [status, setStatus] = useState<AnalysisStatus>(initialStatus)
   const [isTriggering, setIsTriggering] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shouldPoll, setShouldPoll] = useState(false)
 
   // Polling for analysis status updates
   const { start: startPolling, stop: stopPolling, attempts } = usePolling<EvidenceDetail>({
@@ -37,10 +38,11 @@ export function useAnalysis({
       if (!data) return false
       return data.status === 'completed' || data.status === 'error'
     },
-    enabled: status === 'processing',
+    enabled: shouldPoll && status === 'processing',
     interval: 5000, // 5 seconds
     maxAttempts: 60, // 5 minutes total (60 * 5s)
     onComplete: (data, reason) => {
+      setShouldPoll(false)
       if (data) {
         if (data.status === 'completed') {
           onAnalysisComplete?.(data)
@@ -72,7 +74,8 @@ export function useAnalysis({
       
       if (response.status === 'queued' || response.status === 'processing') {
         setStatus('processing')
-        // Polling will auto-start due to status change
+        setShouldPoll(true) // Inicia o polling
+        startPolling() // Força início do polling
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao iniciar análise'
@@ -81,7 +84,7 @@ export function useAnalysis({
     } finally {
       setIsTriggering(false)
     }
-  }, [evidenceId, onAnalysisError])
+  }, [evidenceId, onAnalysisError, startPolling])
 
   // Retry analysis (for error state)
   const retryAnalysis = useCallback(async () => {

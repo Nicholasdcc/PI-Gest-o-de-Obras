@@ -142,7 +142,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
       {/* Summary */}
       <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-semibold text-gray-700">
+          <span className="font-semibold text-gray-800">
             Total de Problemas:
           </span>
           <span className="text-lg font-bold text-[#001489]">
@@ -153,7 +153,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
         {/* Severity Breakdown */}
         {issues.some(issue => issue.severity) && (
           <div className="mt-3 pt-3 border-t border-gray-300">
-            <p className="text-xs font-semibold text-gray-600 mb-2">
+            <p className="text-xs font-semibold text-gray-700 mb-2">
               Por Severidade:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -165,7 +165,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                 return (
                   <span
                     key={severity}
-                    className="text-xs px-2 py-1 rounded bg-white border border-gray-300"
+                    className="text-xs px-2 py-1 rounded bg-white border border-gray-300 text-gray-800 font-medium"
                   >
                     {getSeverityIcon(severity as IssueSeverity)} {getSeverityLabel(severity as IssueSeverity)}: {count}
                   </span>
