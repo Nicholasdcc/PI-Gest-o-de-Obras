@@ -90,7 +90,7 @@ export function ProjectForm({
           id="name"
           value={formData.name}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition placeholder:text-gray-500 ${
+          className={`w-full px-4 text-black py-3 border rounded-lg focus:outline-none focus:ring-2 transition placeholder:text-gray-500 ${
             errors.name
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:ring-[#001489]'
@@ -116,7 +116,7 @@ export function ProjectForm({
           id="location"
           value={formData.location}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('location', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none placeholder:text-gray-500 ${
+          className={`w-full px-4 py-3 text-black border rounded-lg focus:outline-none focus:ring-2 transition resize-none placeholder:text-gray-500 ${
             errors.location
               ? 'border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:ring-[#001489]'
